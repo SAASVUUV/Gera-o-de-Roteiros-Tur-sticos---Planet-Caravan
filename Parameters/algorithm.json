@@ -6,34 +6,5 @@
             100
         ]
     },
-    "ITS": {
-        "remove_prob": [
-            0.25,
-            0.5
-        ],
-        "tabu_size": [
-            20,
-            40
-        ],
-        "max_iterations": [
-            15
-        ],
-        "max_tabu_tenure": [
-            10
-        ],
-        "improvement_threshold": [
-            0.1
-        ],
-        "perturbation_strength": [
-            0
-        ],
-        "num_neighbors_to_evaluate": [
-            5
-        ],
-        "multistart_iterations": [
-            1
-        ]
-    },
-    "Random": {},
     "Greedy": {}
 }

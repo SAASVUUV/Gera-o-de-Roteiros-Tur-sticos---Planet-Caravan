@@ -6,7 +6,7 @@ import pandas as pd
 
 import numpy as np
 
-from heuristics import its, grasp, simple_greedy, simple_random
+from heuristics import grasp, simple_greedy
 
 from operations import aux
 
@@ -35,20 +35,12 @@ def generate_experiments(df_pois, distance_matrix):
     experiments_parameters = aux.read_parameters("experiments.json")
 
     techniques = {
-        "ITS": {
-            "func": its.tabu_search_procedure,
-            "parameters": aux.explode_parameters(algorithm_parameters["ITS"]),
-        },
         "GRASP": {
             "func": grasp.grasp_heuristic,
             "parameters": aux.explode_parameters(algorithm_parameters["GRASP"]),
         },
         "Greedy": {
             "func": simple_greedy.construct_greedy_route,
-            "parameters": [None],
-        },
-        "Random": {
-            "func": simple_random.construct_random_route,
             "parameters": [None],
         },
     }
@@ -70,18 +62,9 @@ def generate_experiments(df_pois, distance_matrix):
 
                 for _ in range(0, experiments_parameters["amount_executions"]):
 
-                    remove_prob, tabu_size = None, None
-
-                    if "remove_prob" in algorithm_parameters.keys():
-
-                        remove_prob, tabu_size = (
-                            algorithm_parameters["remove_prob"],
-                            algorithm_parameters["tabu_size"],
-                        )
-
                     start = time.time()
 
-                    if algorithm in ["ITS", "GRASP"]:
+                    if algorithm == "GRASP":
 
                         solution, f = algo_func(
                             places_parameters.copy(),
@@ -104,7 +87,5 @@ def generate_experiments(df_pois, distance_matrix):
                         end - start,
                         f,
                         solution,
-                        remove_prob,
-                        tabu_size,
                         algorithm,
                     )

@@ -9,8 +9,6 @@ def write_results(
     time,
     fitness,
     route,
-    remove_prob,
-    list_size,
     algorithm,
 ):
 
@@ -25,8 +23,6 @@ def write_results(
                     str(time),
                     str(fitness),
                     str(route),
-                    str(remove_prob),
-                    str(list_size),
                 ]
             )
             + "\n"

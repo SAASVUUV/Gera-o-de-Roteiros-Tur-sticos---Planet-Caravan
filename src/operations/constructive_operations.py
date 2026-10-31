@@ -68,10 +68,3 @@ def generate_route_array(users_parameters, route_parameters):
             route = np.append(route, route_parameters[day]["route"][1:])
 
     return route
-
-
-def split_array_at_value(arr, value):
-
-    splits = np.where(arr == value)[0][1:]  # Encontra os índices onde o valor ocorre
-
-    return np.split(arr, splits)  # Divide o array com base nos índices encontrados
