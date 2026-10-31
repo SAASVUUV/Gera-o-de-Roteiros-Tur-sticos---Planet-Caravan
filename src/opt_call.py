@@ -11,7 +11,7 @@ from heuristics import grasp, simple_greedy
 from operations import aux
 
 
-def generate_experiments(df_pois, distance_matrix):
+def build_places_parameters(df_pois, distance_matrix):
 
     pois = np.sort(df_pois[df_pois["General Category"] != "hotel"]["Name"].unique())
 
@@ -28,6 +28,13 @@ def generate_experiments(df_pois, distance_matrix):
         "distance_matrix": distance_matrix,
         "places_available": pois,
     }
+
+    return places_parameters
+
+
+def generate_experiments(df_pois, distance_matrix):
+
+    places_parameters = build_places_parameters(df_pois, distance_matrix)
 
     # we have to explode the parameters
     users_parameters = aux.read_parameters("user.json")

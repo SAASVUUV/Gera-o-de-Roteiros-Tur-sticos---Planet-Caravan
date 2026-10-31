@@ -63,11 +63,9 @@ def read_distance_matrix(city):
     ]
 
 
-if __name__ == "__main__":
-
-    np.random.seed(1)
-
-    city = "RJ"
+def prepare_data(city):
+    """Lê e prepara os dados da cidade. Devolve (df, distance_matrix), com
+    cada local já convertido para um ID inteiro."""
 
     df = pd.read_table("Input/" + city + ".csv", sep=";")
 
@@ -148,5 +146,16 @@ if __name__ == "__main__":
         df["Working End"] = pd.to_datetime(
             df["Working End"], format="%d/%m/%Y %I:%M %p"
         )
+
+    return df, distance_matrix
+
+
+if __name__ == "__main__":
+
+    np.random.seed(1)
+
+    city = "RJ"
+
+    df, distance_matrix = prepare_data(city)
 
     opt_call.generate_experiments(df, distance_matrix)

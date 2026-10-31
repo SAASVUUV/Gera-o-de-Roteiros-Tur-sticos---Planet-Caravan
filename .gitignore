@@ -162,3 +162,7 @@ cython_debug/
 # Arquivos grandes gerados localmente
 Input/*.osm.pbf
 cache/
+
+# Versão C++ (cpp/): binários e dados exportados por scripts/export_instance.py
+cpp/build/
+Input/*_instance/
