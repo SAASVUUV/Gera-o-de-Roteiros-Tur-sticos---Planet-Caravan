@@ -123,7 +123,7 @@ if __name__ == "__main__":
         & (df["Name"].isin(distance_matrix.index))
     ]
 
-    df["Name"] = df["Name"].replace(codes)
+    df["Name"] = df["Name"].map(codes).astype(int)
 
     df = df.reset_index(drop=True)
 

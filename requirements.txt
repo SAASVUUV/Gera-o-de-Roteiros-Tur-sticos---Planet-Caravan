@@ -1,0 +1,9 @@
+# Execução dos experimentos (src/)
+numpy
+pandas
+tqdm
+
+# Notebook de análise (Results Analysis/)
+matplotlib
+scipy
+jupyter
