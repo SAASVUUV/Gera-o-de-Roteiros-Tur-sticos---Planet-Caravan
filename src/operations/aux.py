@@ -1,4 +1,5 @@
 import json
+import os
 import itertools
 
 
@@ -11,6 +12,8 @@ def write_results(
     route,
     algorithm,
 ):
+
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     with open(output_file, "a") as file:
 

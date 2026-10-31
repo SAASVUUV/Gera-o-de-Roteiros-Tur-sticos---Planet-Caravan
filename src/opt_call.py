@@ -81,7 +81,7 @@ def generate_experiments(df_pois, distance_matrix):
                     end = time.time()
 
                     aux.write_results(
-                        "Results Analysis/results.txt",
+                        "Results Analysis/My Results/results.txt",
                         user_parameter["budget"],
                         user_parameter["total_distance"],
                         end - start,
