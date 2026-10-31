@@ -1,0 +1,38 @@
+Resumo de viabilidade de: Results Analysis/My Results/results.txt
+Gerado em: 2026-10-31 20:54 por cpp/build/check_results
+Dados: Input/RJ_instance
+Restrições: amount_days=2, amount_daily_places=5, category=3 (seguidos)
+
+secao                     budget  dist          n  viaveis   fit.todas fit.viaveis melhor.viav  violacoes
+GRASP max_iterations=10   500     10000       100      76%       40.83       40.72       43.00  distancia=21 orcamento=3 
+GRASP max_iterations=10   500     20000       100      86%       41.09       41.02       43.50  distancia=11 orcamento=3 
+GRASP max_iterations=10   1000    10000       100      79%       42.06       42.04       44.00  distancia=21 orcamento=2 
+GRASP max_iterations=10   1000    20000       100      80%       41.98       42.04       44.00  distancia=19 orcamento=3 
+GRASP max_iterations=10   2500    10000       100      70%       42.30       42.26       44.50  distancia=30 
+GRASP max_iterations=10   2500    20000       100      79%       42.45       42.46       44.00  distancia=21 orcamento=1 
+GRASP max_iterations=50   500     10000       100      69%       42.38       42.32       44.00  distancia=27 orcamento=6 
+GRASP max_iterations=50   500     20000       100      78%       42.55       42.53       44.50  distancia=17 orcamento=6 
+GRASP max_iterations=50   1000    10000       100      69%       43.17       43.14       44.50  distancia=31 
+GRASP max_iterations=50   1000    20000       100      71%       43.28       43.27       44.50  distancia=29 
+GRASP max_iterations=50   2500    10000       100      62%       43.55       43.49       45.00  distancia=38 
+GRASP max_iterations=50   2500    20000       100      75%       43.53       43.51       45.00  distancia=25 
+GRASP max_iterations=100  500     10000       100      66%       42.76       42.70       44.00  distancia=31 orcamento=4 
+GRASP max_iterations=100  500     20000       100      84%       42.99       42.99       44.50  distancia=14 orcamento=4 
+GRASP max_iterations=100  1000    10000       100      69%       43.52       43.48       44.50  distancia=30 orcamento=1 
+GRASP max_iterations=100  1000    20000       100      81%       43.48       43.47       44.50  distancia=18 orcamento=2 
+GRASP max_iterations=100  2500    10000       100      71%       43.77       43.75       45.00  distancia=29 
+GRASP max_iterations=100  2500    20000       100      77%       43.85       43.88       45.00  distancia=23 
+Greedy                    500     10000       100     100%       36.00       36.00       36.00  
+Greedy                    500     20000       100     100%       35.50       35.50       35.50  
+Greedy                    1000    10000       100     100%       43.50       43.50       43.50  
+Greedy                    1000    20000       100     100%       45.00       45.00       45.00  
+Greedy                    2500    10000       100     100%       43.50       43.50       43.50  
+Greedy                    2500    20000       100     100%       45.00       45.00       45.00  
+
+Total: 1942 de 2400 soluções viáveis (80.9%)
+
+Colunas: n = soluções no grupo; viaveis = % que respeitam todas as restrições;
+fit.todas / fit.viaveis = fitness médio de todas / só das viáveis; melhor.viav = maior
+fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.
+Regras: orçamento = hotel x dias + locais; distância de cada dia inclui a volta ao
+hotel; categoria = locais seguidos da mesma categoria; nenhum local se repete na viagem.

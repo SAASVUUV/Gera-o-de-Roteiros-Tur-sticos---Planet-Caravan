@@ -6,9 +6,7 @@
 
 #include "../numpy_compat.hpp"
 
-void write_results(const std::string& output_file, const Json& budget, const Json& distance,
-                   double time, const std::string& fitness, const std::string& route,
-                   const std::string& algorithm) {
+static std::ofstream open_for_append(const std::string& output_file) {
 
     const std::filesystem::path parent = std::filesystem::path(output_file).parent_path();
     if (!parent.empty()) {
@@ -19,6 +17,19 @@ void write_results(const std::string& output_file, const Json& budget, const Jso
     if (!file) {
         throw std::runtime_error("não foi possível escrever em " + output_file);
     }
+    return file;
+}
+
+void write_comment(const std::string& output_file, const std::string& text) {
+
+    open_for_append(output_file) << "# " << text << '\n';
+}
+
+void write_results(const std::string& output_file, const Json& budget, const Json& distance,
+                   double time, const std::string& fitness, const std::string& route,
+                   const std::string& algorithm) {
+
+    std::ofstream file = open_for_append(output_file);
 
     // str() de um int do Python e do json.dump() são iguais ("500");
     // strings saem sem aspas, como str() no Python.

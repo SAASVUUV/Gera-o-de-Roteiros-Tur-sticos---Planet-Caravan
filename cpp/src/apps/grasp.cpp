@@ -19,10 +19,10 @@
 #include <iostream>
 #include <string>
 
-#include "heuristics/grasp.hpp"
-#include "instance.hpp"
-#include "numpy_compat.hpp"
-#include "operations/aux.hpp"
+#include "../heuristics/grasp.hpp"
+#include "../instance.hpp"
+#include "../numpy_compat.hpp"
+#include "../operations/aux.hpp"
 
 namespace {
 
@@ -76,6 +76,13 @@ void generate_experiments(const PlacesParameters& places_parameters, const Optio
     for (const Json& algo_parameters : grasp_parameters) {
 
         const GraspParameters grasp = grasp_parameters_from_json(algo_parameters);
+
+        // cabeçalho do grupo, ex.: "# GRASP max_iterations=10"
+        std::string header = algorithm;
+        for (const auto& [key, value] : algo_parameters.items()) {
+            header += " " + key + "=" + value.dump();
+        }
+        write_comment(options.output, header);
 
         // list of parameters
         for (const Json& user_parameter : users_combinations) {

@@ -34,10 +34,19 @@ A literal C++ translation of the authors' GRASP. The user wants it as the base f
   - Keep `-ffp-contract=off`.
 - **Data.** `scripts/export_instance.py` runs `main.prepare_data` and `opt_call.build_places_parameters`, which were extracted from the old inline code without changing their logic. It writes `Input/RJ_instance/`: `places.tsv`, `hotels.txt`, `places_available.txt` and `distance_matrix.bin` (float64, row-major). The folder is gitignored. Re-export whenever `RJ.csv` or the matrix changes.
 - **Build and run** from the repo root:
-  - `make -C cpp` builds `cpp/build/grasp` (gitignored).
-  - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_cpp.txt`.
+  - `make -C cpp` builds one executable per file in `cpp/src/apps/` into `cpp/build/` (gitignored). The rest of `cpp/src/` is shared code. New programs, such as the user's own GRASP, go in `apps/`.
+  - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_cpp.txt`. Before each algorithm-parameter group it writes a `# GRASP max_iterations=N` line (Python doesn't).
   - It is about 15× faster than Python.
-- **Verifying a change to the translation:** compare `cut -f1,2,3,5,6` of the C++ output with the GRASP rows of the Python output.
+- **Verifying a change to the translation:** compare `grep '^GRASP' | cut -f1,2,3,5,6` of the C++ output with the GRASP rows of the Python output.
+- **Feasibility checker:** `cpp/build/check_results <results file>` (`model/feasibility.cpp`).
+  - It recomputes everything from the final route. It prints a per-group summary and saves it to `<file>_summary.txt` (override with `--summary`). It writes `<file>_checked.tsv` with one row per solution. `#` comment lines become the `secao` column, and numpy-wrapped multi-line routes are handled.
+  - Rule definitions chosen with the user:
+    - Category: at most `category` **consecutive** places of the same category per day, as in the paper. The authors' code counts the daily total instead.
+    - No repeated place in the **whole trip**.
+    - At most `amount_daily_places` places per day, hotel excluded.
+    - Distance includes the walk back to the hotel.
+    - Tolerance 1e-6.
+  - About 25% of the authors' final GRASP solutions are infeasible. Almost all violate distance; the cause is local-search bugs. All Greedy solutions are feasible.
 
 ## Architecture
 

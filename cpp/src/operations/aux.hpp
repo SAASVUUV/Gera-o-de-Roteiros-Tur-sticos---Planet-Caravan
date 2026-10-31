@@ -15,6 +15,10 @@ void write_results(const std::string& output_file, const Json& budget, const Jso
                    double time, const std::string& fitness, const std::string& route,
                    const std::string& algorithm);
 
+// Linha de comentário ("# texto") para separar grupos no arquivo de
+// resultados. Não existe no Python; o check_results usa como "secao".
+void write_comment(const std::string& output_file, const std::string& text);
+
 Json read_parameters(const std::string& file_parameters);
 
 // Produto cartesiano entre todas as listas (itertools.product): uma combinação

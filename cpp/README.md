@@ -31,7 +31,12 @@ uv pip install --python .venv/bin/python -r requirements.txt
 make -C cpp
 ```
 
-O comando gera `cpp/build/grasp`. Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `third_party/nlohmann/json.hpp`, já vem junto.
+O comando gera um executável em `cpp/build/` para cada arquivo de `cpp/src/apps/`:
+
+- `grasp`: o GRASP dos autores.
+- `check_results`: o verificador de viabilidade.
+
+Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `third_party/nlohmann/json.hpp`, já vem junto.
 
 ### 3. Rodar
 
@@ -39,7 +44,7 @@ O comando gera `cpp/build/grasp`. Precisa de um g++ com C++20 e não tem outras 
 cpp/build/grasp
 ```
 
-O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_cpp.txt`, no mesmo formato de 6 colunas do Python.
+O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_cpp.txt`, no mesmo formato de 6 colunas do Python. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
 
 Opções:
 
@@ -49,13 +54,47 @@ Opções:
 | `--instance PASTA` | `Input/RJ_instance` | dados exportados |
 | `--seed N` | `1` | semente; 1 é a do `main.py` |
 
+### 4. Verificar a viabilidade dos resultados
+
+```
+cpp/build/check_results "Results Analysis/My Results/results.txt"
+```
+
+O programa aceita arquivos do Python (GRASP e Greedy) e do C++. Ele faz duas coisas:
+
+- **Resumo por grupo** (seção, budget, distância): % de soluções viáveis, fitness médio de todas e só das viáveis, melhor fitness viável e quantas soluções violam cada restrição. Ele aparece no terminal e também é salvo em `<arquivo>_summary.txt` ao lado do original (ou onde `--summary` indicar), com data e uma legenda das colunas.
+- **TSV com uma linha por solução**, em `<arquivo>_checked.tsv` ao lado do original (ou onde `--output` indicar). Ele traz custo real, distância de cada dia, locais por dia, a maior sequência de mesma categoria, as violações e o fitness recalculado. Dá para abrir no pandas: `pd.read_csv(..., sep="\t")`.
+
+O arquivo de resultados só traz `budget` e `total_distance` em cada linha. Os demais parâmetros vêm de `Parameters/user.json`, que precisa ter um único valor para cada um. Se tiver mais de um, informe qual usar com `--amount-days`, `--daily-places` ou `--category`.
+
+Se o fitness recalculado não bater com o registrado, o programa avisa. Isso indica que o arquivo foi gerado com outros dados. É o caso de `Results Analysis/Authors/`, que usou a matriz de distâncias dos autores.
+
+#### Regras usadas (`model/feasibility.cpp`)
+
+A verificação recalcula tudo a partir da rota final, sem usar nenhum valor guardado pela heurística:
+
+| Restrição | Regra | Violação no TSV |
+|---|---|---|
+| Orçamento | preço do hotel × `amount_days` + preço dos locais ≤ `budget` | `orcamento(+excesso)` |
+| Distância diária | hotel → locais do dia, na ordem → hotel ≤ `total_distance` | `distancia_diaN(+excesso em m)` |
+| Locais por dia | locais do dia, sem o hotel, ≤ `amount_daily_places` | `locais_diaN(6>5)` |
+| Categoria | no máximo `category` locais **seguidos** da mesma categoria no dia (regra do artigo) | `categoria_diaN(4>3)` |
+| Repetição | nenhum local se repete na **viagem inteira** | `repetido(ID x vezes)` |
+| Estrutura | começa num hotel, tem `amount_days` dias e nenhum outro hotel aparece como local | `estrutura(...)` |
+
+Somas e limites são comparados com uma folga de 1e-6 (metros ou reais), para que erros de arredondamento não contem como violação.
+
+O mesmo `check_feasibility` pode ser chamado de dentro de uma heurística nova, para garantir que ela só devolve soluções viáveis.
+
 ## Organização
 
 Cada arquivo C++ corresponde a um arquivo Python, com as mesmas funções:
 
 | C++ (`cpp/src/`) | Python (`src/`) |
 |---|---|
-| `main.cpp` | `main.py` + `opt_call.py` (só o laço do GRASP) |
+| `apps/grasp.cpp` | `main.py` + `opt_call.py` (só o laço do GRASP) |
+| `apps/check_results.cpp` | — (verificador de viabilidade) |
+| `model/feasibility.cpp` | — (regras de viabilidade) |
 | `heuristics/grasp.cpp` | `heuristics/grasp.py` |
 | `heuristics/random_greedy_procedure.cpp` | `heuristics/random_greedy_procedure.py` |
 | `operations/constructive_operations.cpp` | `operations/constructive_operations.py` |
