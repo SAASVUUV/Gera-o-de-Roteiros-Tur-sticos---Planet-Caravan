@@ -319,7 +319,14 @@ int main(int argc, char** argv) {
                   << ", amount_daily_places=" << users.amount_daily_places << ", category=" << users.category
                   << " (seguidos)\n\n";
 
-        summary << std::left << std::setw(26) << "secao" << std::setw(8) << "budget" << std::setw(9) << "dist"
+        // largura da coluna "secao": o maior nome de grupo
+        int label_width = 6;
+        for (const GroupSummary& group : groups) {
+            const std::string& label = group.section.empty() ? group.algorithm : group.section;
+            label_width = std::max(label_width, static_cast<int>(label.size()) + 2);
+        }
+
+        summary << std::left << std::setw(label_width) << "secao" << std::setw(8) << "budget" << std::setw(9) << "dist"
                   << std::right << std::setw(6) << "n" << std::setw(9) << "viaveis" << std::setw(12)
                   << "fit.todas" << std::setw(12) << "fit.viaveis" << std::setw(12) << "melhor.viav"
                   << "  violacoes\n";
@@ -333,7 +340,7 @@ int main(int argc, char** argv) {
             for (const auto& [type, count] : group.violations) {
                 violations << type << "=" << count << " ";
             }
-            summary << std::left << std::setw(26) << label << std::setw(8) << group.budget << std::setw(9)
+            summary << std::left << std::setw(label_width) << label << std::setw(8) << group.budget << std::setw(9)
                       << group.total_distance << std::right << std::setw(6) << group.count << std::setw(8)
                       << std::fixed << std::setprecision(0) << 100.0 * group.feasible / group.count << "%"
                       << std::setprecision(2) << std::setw(12) << group.fitness_sum / group.count;

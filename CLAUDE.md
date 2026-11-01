@@ -27,17 +27,25 @@ Research code (see `Paper.pdf`) that builds multi-day tourist itineraries for Ri
 
 ## C++ GRASP (`cpp/`)
 
-A literal C++ translation of the authors' GRASP. The user wants it as the base for their own improved GRASP. `cpp/README.md` (in Portuguese) has the details and the list of the original's bugs that were kept on purpose (marked `// ORIGINAL:` in the code).
-- **It is bit-exact with Python.** `numpy_compat` reproduces numpy's legacy RNG, `std::mt19937` seeded like `np.random.seed`, plus its masked `randint`, `random_sample`, `choice` with or without `p`, pairwise `np.sum` and `str(np.array)` formatting. With `--seed 1`, all 1800 GRASP rows of `My Results/results.txt` (columns other than time) are reproduced exactly. Keep it that way when touching the translation:
-  - Preserve the order of floating-point operations.
-  - Never draw extra random numbers. `choice` on a 1-element array draws none.
-  - Keep `-ffp-contract=off`.
+The authors' GRASP in C++. The user is improving it **one versioned fix at a time**, to measure each change in isolation. `cpp/README.md` (in Portuguese) has the version table and the bug list. In the code, fixed bugs are marked `// CORRIGIDO:` and the ones still kept are marked `// ORIGINAL:`.
+- **Versions.** The user chose to fix the translation in place, not to keep it alongside.
+  - The **literal translation** lives in commit `70eb95a` and was **bit-exact with Python**. With `--seed 1` it reproduced all 1800 GRASP rows of `My Results/results.txt`, columns other than time. `numpy_compat` provides this: numpy's legacy MT19937 RNG, masked `randint`, `random_sample`, `choice` with or without `p`, pairwise `np.sum` and `str(np.array)`.
+  - The **current version is `GRASP_v1`**. It fixes the local-search feasibility: the real position, an exact day distance via `day_route_distance` including the hotel return, and budget/distance updates. Its routes therefore differ from Python's.
+  - Each version must write a distinct algorithm label (`GRASP_NAME` in `heuristics/grasp.hpp`) and a distinct default output file, so earlier results are never overwritten. The user asked for this explicitly.
+  - Keep `-ffp-contract=off` and preserve the order of floating-point operations and random draws in code that isn't being changed. This keeps each version's effect attributable to its change.
+- **Comparability rule (user decision).** New versions may change *how* the problem is solved, but never the problem rules, because the user compares against the authors' results.
+  - **Keep the authors' cap of `amount_daily_places − 1` places per day.** That is 4, so fitness is at most 45; the paper defines 55. Do not "fix" it.
+  - **Keep the construction's per-day-total category count.** With 4 places/day it is equivalent to the paper's consecutive rule.
+  - **Only as a separate, explicitly requested track:** 5 places/day or other rule changes. Compare such a track only within itself, or normalize by its own maximum.
 - **Data.** `scripts/export_instance.py` runs `main.prepare_data` and `opt_call.build_places_parameters`, which were extracted from the old inline code without changing their logic. It writes `Input/RJ_instance/`: `places.tsv`, `hotels.txt`, `places_available.txt` and `distance_matrix.bin` (float64, row-major). The folder is gitignored. Re-export whenever `RJ.csv` or the matrix changes.
 - **Build and run** from the repo root:
   - `make -C cpp` builds one executable per file in `cpp/src/apps/` into `cpp/build/` (gitignored). The rest of `cpp/src/` is shared code. New programs, such as the user's own GRASP, go in `apps/`.
-  - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_cpp.txt`. Before each algorithm-parameter group it writes a `# GRASP max_iterations=N` line (Python doesn't).
+  - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_grasp_v1.txt`. Before each algorithm-parameter group it writes a `# GRASP_v1 max_iterations=N` line (Python doesn't). `results_cpp.txt` holds the literal translation's output; don't append to it.
   - It is about 15× faster than Python.
-- **Verifying a change to the translation:** compare `grep '^GRASP' | cut -f1,2,3,5,6` of the C++ output with the GRASP rows of the Python output.
+- **Verifying a new version:**
+  - Run `check_results` on its output. It must stay 100% feasible.
+  - Compare the per-group mean fitness against the previous version and against the authors' feasible-only results.
+  - Bit-exactness with Python can only be checked against the literal translation, by checking out `70eb95a`.
 - **Feasibility checker:** `cpp/build/check_results <results file>` (`model/feasibility.cpp`).
   - It recomputes everything from the final route. It prints a per-group summary and saves it to `<file>_summary.txt` (override with `--summary`). It writes `<file>_checked.tsv` with one row per solution. `#` comment lines become the `secao` column, and numpy-wrapped multi-line routes are handled.
   - Rule definitions chosen with the user:
@@ -47,6 +55,7 @@ A literal C++ translation of the authors' GRASP. The user wants it as the base f
     - Distance includes the walk back to the hotel.
     - Tolerance 1e-6.
   - About 25% of the authors' final GRASP solutions are infeasible. Almost all violate distance; the cause is local-search bugs. All Greedy solutions are feasible.
+  - `GRASP_v1` is 100% feasible. With default params and seed 1, its mean fitness beats the authors' feasible-only mean in all 18 groups (about +0.6). It still loses to Greedy when budget ≥ 1000 and distance is 20 km.
 
 ## Architecture
 

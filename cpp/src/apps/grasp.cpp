@@ -1,16 +1,17 @@
-// Equivalente a src/main.py + src/opt_call.py, só para o GRASP.
+// Equivalente a src/main.py + src/opt_call.py, só para o GRASP (versão GRASP_v1).
 //
 // Rode a partir da raiz do repositório (os caminhos são relativos a ela):
 //
 //     cpp/build/grasp [--instance Input/RJ_instance]
-//                     [--output "Results Analysis/My Results/results_cpp.txt"]
+//                     [--output "Results Analysis/My Results/results_grasp_v1.txt"]
 //                     [--seed 1]
 //
 // Lê Parameters/user.json, algorithm.json e experiments.json e, como o Python,
 // roda o GRASP para cada combinação de parâmetros do algoritmo x combinação de
 // parâmetros do usuário x amount_executions, acrescentando uma linha por
 // execução no arquivo de saída. Um único gerador aleatório é usado na execução
-// toda; com a semente 1 (a do main.py) as rotas saem iguais às do Python.
+// toda. A tradução literal (commit 70eb95a) reproduzia o Python exatamente com a semente 1;
+// esta versão corrige a busca local, então as rotas passam a ser diferentes.
 
 #include <chrono>
 #include <cstdint>
@@ -28,7 +29,7 @@ namespace {
 
 struct Options {
     std::string instance = "Input/RJ_instance";
-    std::string output = "Results Analysis/My Results/results_cpp.txt";
+    std::string output = "Results Analysis/My Results/results_grasp_v1.txt";
     uint32_t seed = 1;
 };
 
@@ -71,7 +72,7 @@ void generate_experiments(const PlacesParameters& places_parameters, const Optio
     const std::vector<Json> users_combinations = explode_parameters(users_parameters);
     const int amount_executions = experiments_parameters.at("amount_executions").get<int>();
 
-    const std::string algorithm = "GRASP";
+    const std::string algorithm = GRASP_NAME;
 
     for (const Json& algo_parameters : grasp_parameters) {
 

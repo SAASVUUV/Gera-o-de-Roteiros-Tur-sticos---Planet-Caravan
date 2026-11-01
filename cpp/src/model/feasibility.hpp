@@ -40,6 +40,10 @@ struct FeasibilityReport {
     std::vector<std::string> violations;
 };
 
+// Distância real de um dia: hotel -> locais na ordem -> volta ao hotel.
+// day_route começa no hotel, ex.: [h a b c] = h->a + a->b + b->c + c->h.
+double day_route_distance(const std::vector<int>& day_route, const PlacesParameters& places_parameters);
+
 // Separa a rota no formato de saída das heurísticas (hotel no início de cada
 // dia, ex.: [h a b c h d e f]) em uma lista por dia, cada uma começando no hotel.
 std::vector<std::vector<int>> split_days(const std::vector<int>& route);

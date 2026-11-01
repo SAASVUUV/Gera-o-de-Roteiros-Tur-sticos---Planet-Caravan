@@ -7,21 +7,30 @@
 #include <stdexcept>
 #include <tuple>
 
+#include "../model/feasibility.hpp"
 #include "../model/objective_function.hpp"
 #include "../operations/constructive_operations.hpp"
 #include "random_greedy_procedure.hpp"
 
-using numpy_compat::py_at;
 
 bool verify_local_search_changes(RouteParameters& route_parameters,
                                  const UsersParameters& users_parameters,
                                  const PlacesParameters& places_parameters, int old_place,
-                                 int new_place, long index, int day) {
+                                 int new_place, long position, int day) {
     // temos que verificar o budget
     // temos que verificar a distância
+    //
+    // CORRIGIDO (viabilidade). No original:
+    //   - o índice estava deslocado (usava a posição do local - 1), então os
+    //     trechos verificados não eram os que mudam com a troca, e a volta ao
+    //     hotel nunca era verificada;
+    //   - o trecho antigo não era descontado;
+    //   - daily_distance recebia o custo, e o budget nunca era atualizado.
+    // Agora `position` é a posição real do local em route, a distância do dia
+    // é recalculada com a troca (incluindo a volta ao hotel), e o budget e a
+    // distância do dia são atualizados quando a troca é aceita.
 
     DayParameters& day_parameters = route_parameters.days[static_cast<size_t>(day)];
-    const std::vector<int>& route = day_parameters.route;
 
     const double budget = route_parameters.budget - places_parameters.price[static_cast<size_t>(old_place)] +
                           places_parameters.price[static_cast<size_t>(new_place)];
@@ -31,46 +40,21 @@ bool verify_local_search_changes(RouteParameters& route_parameters,
         return false;
     }
 
-    int before, after;
+    // rota do dia com a troca: hotel -> ... -> novo local -> ... -> hotel
+    std::vector<int> new_route = day_parameters.route;
+    new_route[static_cast<size_t>(position)] = new_place;
 
-    // quer dizer que é ultimo local a ser visitado naquele dia
-    // ORIGINAL: index vem do enumerate(route[1:]), então nunca é igual a
-    // len(route) - 1 e este ramo nunca executa
-    if (static_cast<long>(route.size()) - 1 == index) {
+    const double distance = day_route_distance(new_route, places_parameters);
 
-        // o último local é o hotel
-        before = py_at(route, index - 1);
-        after = route[0];
-
-    } else {
-
-        // ORIGINAL: o local trocado está na posição index + 1, então "before"
-        // é o local duas posições antes (para index = 0, route[-1] é o último
-        // local do dia) e "after" é o próprio local trocado
-        before = py_at(route, index - 1);
-        after = py_at(route, index + 1);
-    }
-
-    // tirando a distância gasta visitando aquele local anterior
-    // ORIGINAL: este valor é descartado pela linha seguinte
-    [[maybe_unused]] double distance = day_parameters.daily_distance -
-                                       places_parameters.distance(before, old_place) -
-                                       places_parameters.distance(old_place, after);
-
-    // ORIGINAL: soma o trecho novo sem ter subtraído o antigo
-    distance = day_parameters.daily_distance + places_parameters.distance(before, new_place) +
-               places_parameters.distance(new_place, after);
-
-    if (distance >= users_parameters.total_distance) {
+    if (distance > users_parameters.total_distance) {
 
         return false;
     }
 
+    // daily_distance passa a incluir a volta ao hotel (ver local_search)
     day_parameters.daily_distance = distance;
 
-    // ORIGINAL: sobrescreve a distância diária com o custo; e
-    // route_parameters["budget"] nunca é atualizado
-    day_parameters.daily_distance = budget;
+    route_parameters.budget = budget;
 
     return true;
 }
@@ -89,6 +73,11 @@ std::pair<RouteParameters, double> local_search(RouteParameters route_parameters
     for (int day = 0; day < users_parameters.amount_days; ++day) {
 
         std::vector<int>& day_route = route_parameters.days[static_cast<size_t>(day)].route;
+
+        // CORRIGIDO: na construção, daily_distance não inclui a volta ao
+        // hotel. Na busca local ela passa a ser a distância real do dia.
+        route_parameters.days[static_cast<size_t>(day)].daily_distance =
+            day_route_distance(day_route, places_parameters);
 
         // for index, place in enumerate(route_parameters[day]["route"][1:])
         const long amount = static_cast<long>(day_route.size()) - 1;
@@ -144,9 +133,10 @@ std::pair<RouteParameters, double> local_search(RouteParameters route_parameters
 
                     const int new_place = random.choice(places);
 
+                    // CORRIGIDO: passa a posição real do local (index + 1), e não index
                     const bool respect_constraints =
                         verify_local_search_changes(route_parameters, users_parameters, places_parameters,
-                                                    place, new_place, index, day);
+                                                    place, new_place, index + 1, day);
 
                     // não respeita as restrições
                     if (!respect_constraints) {

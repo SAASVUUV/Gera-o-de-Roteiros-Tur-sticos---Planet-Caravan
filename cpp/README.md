@@ -1,8 +1,19 @@
 # GRASP em C++
 
-Tradução **literal** do GRASP dos autores (`src/heuristics/grasp.py` e o que ele usa) para C++. A lógica é a mesma, inclusive os bugs (veja abaixo).
+GRASP dos autores (`src/heuristics/grasp.py` e o que ele usa) traduzido para C++, cerca de 15× mais rápido que o Python. Cada correção gera uma **versão**, e cada versão grava seus resultados com nome próprio, para não misturar nem sobrescrever os anteriores:
 
-O C++ reproduz o gerador aleatório do numpy. Com a mesma semente, ele gera **exatamente as mesmas rotas e os mesmos fitness** que o Python. Com a semente 1, as 1800 linhas GRASP de `Results Analysis/My Results/results.txt` saem idênticas, e a execução é cerca de 15× mais rápida (no mesmo computador, 1,6 s no C++ contra 23,6 s no Python).
+| Versão | O que muda | Onde está | Resultados |
+|---|---|---|---|
+| tradução literal | nada: idêntica ao Python, inclusive os bugs | commit `70eb95a` | `results_cpp.txt` (coluna `GRASP`) |
+| `GRASP_v1` (atual) | busca local corrigida: nunca viola orçamento nem distância | código atual | `results_grasp_v1.txt` (coluna `GRASP_v1`) |
+
+O C++ reproduz o gerador aleatório do numpy. A tradução literal, com a semente 1, gera exatamente as mesmas 1800 linhas GRASP de `Results Analysis/My Results/results.txt`. A partir da `GRASP_v1`, as rotas mudam porque a busca local aceita e recusa trocas diferentes. Para voltar à versão literal: `git show 70eb95a:cpp/src/heuristics/grasp.cpp`.
+
+### Resultado da GRASP_v1 (parâmetros padrão, semente 1)
+
+- **100% das soluções viáveis.** O GRASP dos autores tinha 75%: 458 de 1800 violavam distância ou orçamento.
+- **Fitness médio maior que o dos autores em todos os 18 grupos**, cerca de +0,6 em média quando comparado só com as soluções viáveis deles. A verificação antiga somava o trecho novo sem descontar o antigo, o que superestimava a distância e recusava trocas válidas. A nova faz a conta exata e aceita essas trocas.
+- **Ainda perde para o Greedy** com orçamento ≥ 1000 e 20 km: 44,0–44,2 contra 45,0, com 100 iterações.
 
 ## Como usar
 
@@ -33,7 +44,7 @@ make -C cpp
 
 O comando gera um executável em `cpp/build/` para cada arquivo de `cpp/src/apps/`:
 
-- `grasp`: o GRASP dos autores.
+- `grasp`: o GRASP (versão atual, `GRASP_v1`).
 - `check_results`: o verificador de viabilidade.
 
 Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `third_party/nlohmann/json.hpp`, já vem junto.
@@ -44,13 +55,15 @@ Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `
 cpp/build/grasp
 ```
 
-O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_cpp.txt`, no mesmo formato de 6 colunas do Python. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
+O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_grasp_v1.txt`, no mesmo formato de 6 colunas do Python, com `GRASP_v1` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v1 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
+
+Uma versão nova deve trocar `GRASP_NAME` em `heuristics/grasp.hpp` e o arquivo padrão em `apps/grasp.cpp`. Assim os resultados de cada versão ficam separados.
 
 Opções:
 
 | Opção | Padrão | |
 |---|---|---|
-| `--output ARQUIVO` | `Results Analysis/My Results/results_cpp.txt` | arquivo de saída (só acrescenta) |
+| `--output ARQUIVO` | `Results Analysis/My Results/results_grasp_v1.txt` | arquivo de saída (só acrescenta) |
 | `--instance PASTA` | `Input/RJ_instance` | dados exportados |
 | `--seed N` | `1` | semente; 1 é a do `main.py` |
 
@@ -84,6 +97,8 @@ A verificação recalcula tudo a partir da rota final, sem usar nenhum valor gua
 
 Somas e limites são comparados com uma folga de 1e-6 (metros ou reais), para que erros de arredondamento não contem como violação.
 
+A distância de cada dia é calculada por `day_route_distance`, a mesma função que a busca local da `GRASP_v1` usa. Por isso as duas sempre concordam.
+
 O mesmo `check_feasibility` pode ser chamado de dentro de uma heurística nova, para garantir que ela só devolve soluções viáveis.
 
 ## Organização
@@ -113,23 +128,25 @@ Cada arquivo C++ corresponde a um arquivo Python, com as mesmas funções:
 
 O Makefile compila com `-ffp-contract=off`. Sem essa flag, o compilador poderia trocar `a*b + c` por uma instrução FMA, o que muda o arredondamento e deixaria os resultados diferentes dos do Python.
 
-## Comportamentos do código original mantidos na tradução
+## Bugs do código original
 
-Estão marcados com `// ORIGINAL:` no código. São pontos de partida naturais para um GRASP melhorado:
+Os que continuam no código estão marcados com `// ORIGINAL:`; os já corrigidos, com `// CORRIGIDO:`.
 
-1. **`verify_local_search_changes` não atualiza direito o estado da rota.**
+1. **[CORRIGIDO na GRASP_v1] `verify_local_search_changes` não atualizava direito o estado da rota.**
    - A conta que subtrai o trecho antigo é descartada: a nova distância é `daily_distance + d[before][new] + d[new][after]`, sem tirar o trecho antigo.
    - Logo depois, `daily_distance` é sobrescrita com o **custo** (`budget`).
    - `route_parameters["budget"]` nunca é atualizado. As trocas seguintes comparam o orçamento com o custo de antes da busca local.
-2. **Os índices da busca local estão deslocados.** O `index` vem de `enumerate(route[1:])`, mas é usado como posição em `route`:
+2. **[CORRIGIDO na GRASP_v1] Os índices da busca local estavam deslocados.** O `index` vem de `enumerate(route[1:])`, mas é usado como posição em `route`:
    - `before = route[index-1]` é o local duas posições antes. Para `index = 0`, `route[-1]` é o último local do dia.
    - `after = route[index+1]` é o próprio local que está sendo trocado.
    - O ramo "último local do dia" nunca executa.
+
+   **Correção.** `verify_local_search_changes` recebe a posição real do local. Ela recalcula a distância do dia com a troca, incluindo a volta ao hotel (`day_route_distance`), recusa a troca se passar de `total_distance` ou do orçamento, e atualiza `daily_distance` e `budget` quando aceita. O critério de escolha do candidato continua o mesmo.
 3. **A volta ao hotel e os limites são verificados de forma inconsistente.**
    - `build_rcl` mede a volta ao hotel com `d[hotel][poi]`, e não com `d[poi][hotel]`. Hoje isso não faz diferença, porque a matriz gerada por `scripts/build_distance_matrix.py` é simétrica, mas faria com uma matriz assimétrica.
    - O filtro de preço é estrito (`<`), mas `verify_constructive_heuristic_constraints` usa `>`.
    - A distância diária guardada (`daily_distance`) não inclui a volta ao hotel.
-4. **Cada dia tem no máximo `amount_daily_places - 1` locais.** O dia é fechado quando `len(route) >= amount_daily_places`, e `route` inclui o hotel. Com `amount_daily_places = 5`, são 4 locais por dia.
+4. **[MANTIDO de propósito, para comparar com os autores] Cada dia tem no máximo `amount_daily_places - 1` locais.** O dia é fechado quando `len(route) >= amount_daily_places`, e `route` inclui o hotel. Com `amount_daily_places = 5`, são 4 locais por dia.
 5. **`select_alpha` usa o fitness da iteração atual, e não o melhor.** O alpha sorteado só vale para a próxima iteração.
 6. **A busca local só troca um local por outro da mesma categoria e com nota maior.** Ela escolhe o de menor `distância/nota` a partir do local atual, sorteando em caso de empate, e faz uma única passada.
 7. **`before_ls` é calculado e nunca usado.** Foi omitido no C++; ele não consome números aleatórios, então o resultado não muda.

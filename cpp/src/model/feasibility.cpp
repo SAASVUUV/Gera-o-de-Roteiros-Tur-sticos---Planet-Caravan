@@ -21,6 +21,15 @@ void add_violation(FeasibilityReport& report, const std::string& violation) {
 
 } // namespace
 
+double day_route_distance(const std::vector<int>& day_route, const PlacesParameters& places_parameters) {
+    double distance = 0;
+    for (size_t i = 0; i + 1 < day_route.size(); ++i) {
+        distance += places_parameters.distance(day_route[i], day_route[i + 1]);
+    }
+    distance += places_parameters.distance(day_route.back(), day_route.front());
+    return distance;
+}
+
 std::vector<std::vector<int>> split_days(const std::vector<int>& route) {
     std::vector<std::vector<int>> days;
     if (route.empty()) {
@@ -85,11 +94,7 @@ FeasibilityReport check_feasibility(const std::vector<int>& route, const PlacesP
         const std::string day_name = "_dia" + std::to_string(day_index + 1);
 
         // distância: hotel -> locais na ordem -> hotel
-        double distance = 0;
-        for (size_t i = 0; i + 1 < day.size(); ++i) {
-            distance += places_parameters.distance(day[i], day[i + 1]);
-        }
-        distance += places_parameters.distance(day.back(), hotel);
+        const double distance = day_route_distance(day, places_parameters);
         report.daily_distance.push_back(distance);
         if (distance > users_parameters.total_distance + FEASIBILITY_TOLERANCE) {
             add_violation(report, "distancia" + day_name + "(" +

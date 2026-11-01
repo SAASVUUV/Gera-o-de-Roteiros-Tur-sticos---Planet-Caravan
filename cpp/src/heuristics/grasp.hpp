@@ -1,7 +1,9 @@
-// Tradução literal de src/heuristics/grasp.py
+// GRASP dos autores (src/heuristics/grasp.py) traduzido para C++.
 //
-// A lógica é a mesma do Python, inclusive os comportamentos estranhos, que
-// estão marcados com "ORIGINAL:" e listados em cpp/README.md.
+// A tradução literal, idêntica ao Python, está no commit 70eb95a. Esta versão
+// ("GRASP_v1") corrige a viabilidade da busca local; as mudanças estão
+// marcadas com "CORRIGIDO:". Os comportamentos originais que continuam iguais
+// estão marcados com "ORIGINAL:". Tudo está listado em cpp/README.md.
 
 #pragma once
 
@@ -13,6 +15,10 @@
 #include "../numpy_compat.hpp"
 #include "../parameters.hpp"
 
+// Nome do algoritmo na coluna "algorithm" dos resultados. É diferente de
+// "GRASP" para não misturar com os resultados dos autores.
+inline constexpr const char* GRASP_NAME = "GRASP_v1";
+
 // Um item do dict alphas = {0.3: {"results": [...]}, 0.4: ..., 0.7: ...}
 struct AlphaResults {
     double alpha;
@@ -22,7 +28,7 @@ struct AlphaResults {
 bool verify_local_search_changes(RouteParameters& route_parameters,
                                  const UsersParameters& users_parameters,
                                  const PlacesParameters& places_parameters, int old_place,
-                                 int new_place, long index, int day);
+                                 int new_place, long position, int day);
 
 // Devolve (route_parameters, fitness)
 std::pair<RouteParameters, double> local_search(RouteParameters route_parameters,
