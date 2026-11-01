@@ -18,6 +18,9 @@ struct PlacesParameters {
     std::vector<double> rating;         // places_parameters["rating"] (Mean Sentiment)
     std::vector<Category> category;     // places_parameters["category"]
     std::vector<int> places_available;  // places_parameters["places_available"]
+    // places_available na ordem em que o Greedy os percorre (nota decrescente,
+    // empates na ordem do argsort do numpy; ver scripts/export_instance.py)
+    std::vector<int> greedy_order;
     std::vector<double> distance_data;  // places_parameters["distance_matrix"], linha a linha
     size_t size = 0;                    // quantidade de locais
 

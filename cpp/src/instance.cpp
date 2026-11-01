@@ -61,6 +61,11 @@ PlacesParameters read_instance(const std::string& directory) {
 
     places.hotels = read_ids(directory + "/hotels.txt", places.size);
     places.places_available = read_ids(directory + "/places_available.txt", places.size);
+    places.greedy_order = read_ids(directory + "/greedy_order.txt", places.size);
+    if (places.greedy_order.size() != places.places_available.size()) {
+        throw std::runtime_error("greedy_order.txt não corresponde a places_available.txt "
+                                 "(rode de novo: python scripts/export_instance.py)");
+    }
 
     // distance_matrix.bin: n x n float64 little-endian
     std::ifstream matrix_file = open_file(directory + "/distance_matrix.bin", std::ios::binary);

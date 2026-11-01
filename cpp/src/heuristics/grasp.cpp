@@ -11,6 +11,7 @@
 #include "../model/objective_function.hpp"
 #include "../operations/constructive_operations.hpp"
 #include "random_greedy_procedure.hpp"
+#include "simple_greedy.hpp"
 
 
 bool verify_local_search_changes(RouteParameters& route_parameters,
@@ -275,14 +276,30 @@ std::vector<int> generate_daily_array_route(const UsersParameters& users_paramet
     return route;
 }
 
-std::pair<std::vector<int>, double> grasp_heuristic(const PlacesParameters& places_parameters,
-                                                    const UsersParameters& users_parameters,
-                                                    const GraspParameters& algorithm_parameters,
-                                                    numpy_compat::RandomState& random) {
+GraspResult grasp_heuristic(const PlacesParameters& places_parameters, const UsersParameters& users_parameters,
+                            const GraspParameters& algorithm_parameters, numpy_compat::RandomState& random) {
 
     int iteration = 0;
     double best_fitness = 0;
     std::optional<RouteParameters> best_solution;
+
+    // GRASP_v3: o roteiro do Greedy começa como melhor solução (semente). O
+    // Greedy é determinístico e não sorteia nada, então as iterações abaixo
+    // são exatamente as da v2: o resultado é o da v2 quando ela alcança o
+    // Greedy, e o do Greedy quando não alcança.
+    // Se nenhum hotel nota 5 couber no orçamento, o Greedy falha (como no
+    // Python) e o GRASP segue sem semente.
+    std::optional<std::pair<std::vector<int>, double>> greedy;
+    try {
+        greedy = construct_greedy_route(places_parameters, users_parameters);
+    } catch (const GreedyHotelNotFound&) {
+    }
+
+    std::optional<SolutionOrigin> origin; // de onde veio a melhor solução até agora
+    if (greedy.has_value()) {
+        best_fitness = greedy->second;
+        origin = SolutionOrigin::greedy;
+    }
 
     // alphas = {alpha / 10: {"results": np.array([])} for alpha in range(3, 8)}
     std::vector<AlphaResults> alphas;
@@ -328,20 +345,39 @@ std::pair<std::vector<int>, double> grasp_heuristic(const PlacesParameters& plac
 
         // selectiona o alpha com base na probabilidade
 
-        if (iteration == 0 || fitness > best_fitness) {
+        // GRASP_v3: uma solução do GRASP substitui a semente gulosa se for
+        // maior OU IGUAL a ela; entre soluções do GRASP vale a regra original
+        // (só substitui se for maior; a primeira iteração sempre entra quando
+        // não há semente).
+        bool replace;
+        if (!origin.has_value()) {
+            replace = true; // iteration == 0 sem semente
+        } else if (*origin == SolutionOrigin::greedy) {
+            replace = fitness >= best_fitness;
+        } else {
+            replace = fitness > best_fitness;
+        }
+
+        if (replace) {
 
             best_fitness = fitness;
 
             best_solution = solution;
+
+            origin = SolutionOrigin::grasp;
         }
 
         iteration += 1;
     }
 
-    if (!best_solution.has_value()) {
-        // no Python, generate_daily_array_route(None) daria erro
+    if (!origin.has_value()) {
+        // sem semente e sem iterações; no Python, generate_daily_array_route(None) daria erro
         throw std::invalid_argument("max_iterations must be at least 1");
     }
 
-    return {generate_daily_array_route(users_parameters, *best_solution), best_fitness};
+    if (*origin == SolutionOrigin::greedy) {
+        return {greedy->first, best_fitness, SolutionOrigin::greedy};
+    }
+
+    return {generate_daily_array_route(users_parameters, *best_solution), best_fitness, SolutionOrigin::grasp};
 }

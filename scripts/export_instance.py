@@ -11,6 +11,7 @@ Arquivos gerados na pasta de saída:
     places.tsv            id, price, rating, category (um local por linha, na ordem do ID)
     hotels.txt            IDs de places_parameters["hotels"], na mesma ordem
     places_available.txt  IDs de places_parameters["places_available"], na mesma ordem
+    greedy_order.txt      ordem em que o Greedy percorre os locais (por nota, decrescente)
     distance_matrix.bin   matriz n x n em float64 little-endian, linha a linha
 
 Os floats de places.tsv são escritos com repr(), que o C++ lê de volta sem perda.
@@ -59,7 +60,17 @@ def export(places_parameters, out_dir):
                 f"{place}\t{float(price[place])!r}\t{float(rating[place])!r}\t{category[place]}\n"
             )
 
-    for name, values in (("hotels", hotels), ("places_available", places_available)):
+    # Ordem em que o Greedy (src/heuristics/simple_greedy.py) percorre os locais:
+    # mesma expressão do construct_greedy_route. O argsort do numpy não define a
+    # ordem dos empates de nota, então ela é gravada aqui em vez de ser refeita
+    # no C++.
+    greedy_order = places_available[np.flip(np.argsort(rating[places_available]))]
+
+    for name, values in (
+        ("hotels", hotels),
+        ("places_available", places_available),
+        ("greedy_order", greedy_order),
+    ):
         with open(os.path.join(out_dir, name + ".txt"), "w") as file:
             file.write("".join(f"{int(value)}\n" for value in values))
 

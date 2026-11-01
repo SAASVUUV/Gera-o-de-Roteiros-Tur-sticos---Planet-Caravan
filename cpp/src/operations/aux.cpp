@@ -27,7 +27,7 @@ void write_comment(const std::string& output_file, const std::string& text) {
 
 void write_results(const std::string& output_file, const Json& budget, const Json& distance,
                    double time, const std::string& fitness, const std::string& route,
-                   const std::string& algorithm) {
+                   const std::string& algorithm, const std::string& extra) {
 
     std::ofstream file = open_for_append(output_file);
 
@@ -38,7 +38,11 @@ void write_results(const std::string& output_file, const Json& budget, const Jso
     };
 
     file << algorithm << '\t' << to_str(budget) << '\t' << to_str(distance) << '\t'
-         << numpy_compat::py_float_str(time) << '\t' << fitness << '\t' << route << '\n';
+         << numpy_compat::py_float_str(time) << '\t' << fitness << '\t' << route;
+    if (!extra.empty()) {
+        file << '\t' << extra;
+    }
+    file << '\n';
 }
 
 Json read_parameters(const std::string& file_parameters) {

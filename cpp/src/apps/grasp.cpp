@@ -3,7 +3,7 @@
 // Rode a partir da raiz do repositório (os caminhos são relativos a ela):
 //
 //     cpp/build/grasp [--instance Input/RJ_instance]
-//                     [--output "Results Analysis/My Results/results_grasp_v2.txt"]
+//                     [--output "Results Analysis/My Results/results_grasp_v3.txt"]
 //                     [--seed 1]
 //
 // Lê Parameters/user.json, algorithm.json e experiments.json e, como o Python,
@@ -11,7 +11,8 @@
 // parâmetros do usuário x amount_executions, acrescentando uma linha por
 // execução no arquivo de saída. Um único gerador aleatório é usado na execução
 // toda. A tradução literal (commit 70eb95a) reproduzia o Python exatamente com a semente 1;
-// esta versão corrige a busca local, então as rotas passam a ser diferentes.
+// as versões seguintes mudam o algoritmo, então as rotas passam a ser diferentes.
+// Desde a GRASP_v3, cada linha tem uma 7ª coluna com a origem da solução final.
 
 #include <chrono>
 #include <cstdint>
@@ -29,7 +30,7 @@ namespace {
 
 struct Options {
     std::string instance = "Input/RJ_instance";
-    std::string output = "Results Analysis/My Results/results_grasp_v2.txt";
+    std::string output = "Results Analysis/My Results/results_grasp_v3.txt";
     uint32_t seed = 1;
 };
 
@@ -99,15 +100,16 @@ void generate_experiments(const PlacesParameters& places_parameters, const Optio
 
                 const auto start = std::chrono::steady_clock::now();
 
-                const auto [solution, f] = grasp_heuristic(places_parameters, users, grasp, random);
+                const GraspResult result = grasp_heuristic(places_parameters, users, grasp, random);
 
                 const auto end = std::chrono::steady_clock::now();
 
-                // str(f) no Python é str de um array numpy de um elemento: "[41.5]"
+                // str(f) no Python é str de um array numpy de um elemento: "[41.5]".
+                // 7ª coluna (desde a GRASP_v3): origem da solução, "greedy" ou "grasp".
                 write_results(options.output, user_parameter.at("budget"), user_parameter.at("total_distance"),
                               std::chrono::duration<double>(end - start).count(),
-                              numpy_compat::array_str(std::vector<double>{f}), numpy_compat::array_str(solution),
-                              algorithm);
+                              numpy_compat::array_str(std::vector<double>{result.fitness}),
+                              numpy_compat::array_str(result.route), algorithm, origin_name(result.origin));
             }
 
             const double elapsed =

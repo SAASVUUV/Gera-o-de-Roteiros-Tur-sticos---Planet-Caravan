@@ -11,9 +11,11 @@
 // ordered_json mantém a ordem das chaves do arquivo, como o dict do Python.
 using Json = nlohmann::ordered_json;
 
+// `extra`, se não for vazio, vira uma 7ª coluna (ex.: a origem da solução no
+// GRASP_v3). O formato do Python tem 6 colunas; o check_results aceita as duas.
 void write_results(const std::string& output_file, const Json& budget, const Json& distance,
                    double time, const std::string& fitness, const std::string& route,
-                   const std::string& algorithm);
+                   const std::string& algorithm, const std::string& extra = "");
 
 // Linha de comentário ("# texto") para separar grupos no arquivo de
 // resultados. Não existe no Python; o check_results usa como "secao".

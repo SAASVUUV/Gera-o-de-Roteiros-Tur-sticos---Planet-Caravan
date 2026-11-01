@@ -6,7 +6,8 @@ GRASP dos autores (`src/heuristics/grasp.py` e o que ele usa) traduzido para C++
 |---|---|---|---|
 | tradução literal | nada: idêntica ao Python, inclusive os bugs | commit `70eb95a` | `results_cpp.txt` (coluna `GRASP`) |
 | `GRASP_v1` | busca local corrigida: nunca viola orçamento nem distância | commit `c09da9d` | `results_grasp_v1.txt` (coluna `GRASP_v1`) |
-| `GRASP_v2` (atual) | busca local testa os candidatos em ordem, pelo efeito no trajeto, até um caber | código atual | `results_grasp_v2.txt` (coluna `GRASP_v2`) |
+| `GRASP_v2` | busca local testa os candidatos em ordem, pelo efeito no trajeto, até um caber | commit `32fdc39` | `results_grasp_v2.txt` (coluna `GRASP_v2`) |
+| `GRASP_v3` (atual) | o roteiro do Greedy é a solução inicial; o GRASP só o substitui com fitness ≥ | código atual | `results_grasp_v3.txt` (coluna `GRASP_v3`, 7ª coluna com a origem) |
 
 O C++ reproduz o gerador aleatório do numpy. A tradução literal, com a semente 1, gera exatamente as mesmas 1800 linhas GRASP de `Results Analysis/My Results/results.txt`. A partir da `GRASP_v1`, as rotas mudam porque a busca local aceita e recusa trocas diferentes. Para ver uma versão anterior: `git show <commit>:cpp/src/heuristics/grasp.cpp`.
 
@@ -33,6 +34,21 @@ A v1 testava só o candidato mais próximo de P e desistia se ele não coubesse.
 - **Fitness médio maior que o da v1 em todos os 18 grupos**, +1,2 em média. Com 100 iterações fica em 44,6–45,0 (o máximo é 45), e a melhor solução de cada grupo chega a 45.
 - **Empata ou vence o Greedy em 12 de 18 grupos.** Perde por pouco só onde o Greedy faz 45: orçamento ≥ 1000 e 20 km, por exemplo 44,98 contra 45,0 com 100 iterações.
 - **Cerca de 1,4× mais lenta por execução** que a v1, porque testa mais candidatos. Continua na casa dos milissegundos (cerca de 40 ms com 100 iterações).
+
+### Resultado da GRASP_v3 (parâmetros padrão, semente 1)
+
+**O que mudou.** Antes das iterações, o GRASP monta o roteiro do Greedy (tradução literal do `simple_greedy.py`, sem mudar a lógica) e o usa como melhor solução inicial. Uma iteração do GRASP substitui essa semente se tiver fitness **maior ou igual** ao dela; entre soluções do próprio GRASP vale a regra de antes (só substitui se for maior). Se nenhum hotel nota 5 couber no orçamento, o Greedy falha, como no Python, e o GRASP segue sem semente. O tempo do Greedy entra no tempo de cada execução.
+
+**A 7ª coluna diz de onde veio a solução final.** `grasp` quer dizer que uma iteração do GRASP alcançou ou superou o Greedy por conta própria. `greedy` quer dizer que nenhuma alcançou, e ficou a semente. O `check_results` mostra isso como `do_grasp` no resumo. Use essa coluna para separar o mérito do GRASP da garantia dada pela semente: "GRASP_v3 ≥ Greedy" agora vale por construção.
+
+**Resultados:**
+
+- **O Greedy não usa números aleatórios**, então as iterações são exatamente as da v2: cada execução da v3 é igual à da v2 quando a v2 alcança o Greedy, e igual ao Greedy quando não alcança. Isso foi conferido linha a linha nas 1800 execuções.
+- **Só muda onde o Greedy faz 45** (orçamento ≥ 1000 e 20 km), mais algumas execuções de 1000/10 km com 10 iterações. Nesses grupos a média passa a ser 45,00. Nos demais, a v3 é igual à v2.
+- **`do_grasp`**: 100% em quase todos os grupos. Onde o Greedy faz 45, o GRASP sozinho chega lá em 14–22% das execuções com 10 iterações, 61–77% com 50 e 81–95% com 100.
+- **100% viável**, inclusive no teste de estresse (10.800 soluções).
+
+O Greedy em C++ também pode ser rodado sozinho com `cpp/build/greedy`. Ele reproduz exatamente as 600 linhas Greedy de `results.txt`.
 
 ## Como usar
 
@@ -63,7 +79,8 @@ make -C cpp
 
 O comando gera um executável em `cpp/build/` para cada arquivo de `cpp/src/apps/`:
 
-- `grasp`: o GRASP (versão atual, `GRASP_v2`).
+- `grasp`: o GRASP (versão atual, `GRASP_v3`).
+- `greedy`: o Greedy dos autores (tradução literal), grava em `results_greedy_cpp.txt`.
 - `check_results`: o verificador de viabilidade.
 
 Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `third_party/nlohmann/json.hpp`, já vem junto.
@@ -74,7 +91,7 @@ Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `
 cpp/build/grasp
 ```
 
-O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_grasp_v2.txt`, no mesmo formato de 6 colunas do Python, com `GRASP_v2` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v2 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
+O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_grasp_v3.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v3` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v3 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
 
 Uma versão nova deve trocar `GRASP_NAME` em `heuristics/grasp.hpp` e o arquivo padrão em `apps/grasp.cpp`. Assim os resultados de cada versão ficam separados.
 
@@ -82,7 +99,7 @@ Opções:
 
 | Opção | Padrão | |
 |---|---|---|
-| `--output ARQUIVO` | `Results Analysis/My Results/results_grasp_v2.txt` | arquivo de saída (só acrescenta) |
+| `--output ARQUIVO` | `Results Analysis/My Results/results_grasp_v3.txt` | arquivo de saída (só acrescenta) |
 | `--instance PASTA` | `Input/RJ_instance` | dados exportados |
 | `--seed N` | `1` | semente; 1 é a do `main.py` |
 
@@ -95,7 +112,7 @@ cpp/build/check_results "Results Analysis/My Results/results.txt"
 O programa aceita arquivos do Python (GRASP e Greedy) e do C++. Ele faz duas coisas:
 
 - **Resumo por grupo** (seção, budget, distância): % de soluções viáveis, fitness médio de todas e só das viáveis, melhor fitness viável e quantas soluções violam cada restrição. Ele aparece no terminal e também é salvo em `<arquivo>_summary.txt` ao lado do original (ou onde `--summary` indicar), com data e uma legenda das colunas.
-- **TSV com uma linha por solução**, em `<arquivo>_checked.tsv` ao lado do original (ou onde `--output` indicar). Ele traz custo real, distância de cada dia, locais por dia, a maior sequência de mesma categoria, as violações e o fitness recalculado. Dá para abrir no pandas: `pd.read_csv(..., sep="\t")`.
+- **TSV com uma linha por solução**, em `<arquivo>_checked.tsv` ao lado do original (ou onde `--output` indicar). Ele traz custo real, distância de cada dia, locais por dia, a maior sequência de mesma categoria, as violações, o fitness recalculado e a origem da solução (`origem`, quando o arquivo tem a 7ª coluna). Dá para abrir no pandas: `pd.read_csv(..., sep="\t")`.
 
 O arquivo de resultados só traz `budget` e `total_distance` em cada linha. Os demais parâmetros vêm de `Parameters/user.json`, que precisa ter um único valor para cada um. Se tiver mais de um, informe qual usar com `--amount-days`, `--daily-places` ou `--category`.
 
@@ -127,10 +144,12 @@ Cada arquivo C++ corresponde a um arquivo Python, com as mesmas funções:
 | C++ (`cpp/src/`) | Python (`src/`) |
 |---|---|
 | `apps/grasp.cpp` | `main.py` + `opt_call.py` (só o laço do GRASP) |
+| `apps/greedy.cpp` | `main.py` + `opt_call.py` (só o laço do Greedy) |
 | `apps/check_results.cpp` | — (verificador de viabilidade) |
 | `model/feasibility.cpp` | — (regras de viabilidade) |
 | `heuristics/grasp.cpp` | `heuristics/grasp.py` |
 | `heuristics/random_greedy_procedure.cpp` | `heuristics/random_greedy_procedure.py` |
+| `heuristics/simple_greedy.cpp` | `heuristics/simple_greedy.py` (Greedy, tradução literal) |
 | `operations/constructive_operations.cpp` | `operations/constructive_operations.py` |
 | `operations/aux.cpp` | `operations/aux.py` |
 | `model/objective_function.cpp` | `model/objective_function.py` |

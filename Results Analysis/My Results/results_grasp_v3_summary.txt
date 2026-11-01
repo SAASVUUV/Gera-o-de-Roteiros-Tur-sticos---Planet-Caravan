@@ -1,0 +1,46 @@
+Resumo de viabilidade de: Results Analysis/My Results/results_grasp_v3.txt
+Gerado em: 2026-11-01 16:52 por cpp/build/check_results
+Dados: Input/RJ_instance
+Restrições: amount_days=2, amount_daily_places=5, category=3 (seguidos)
+
+secao                        budget  dist          n  viaveis   fit.todas fit.viaveis melhor.viav do_grasp  violacoes
+GRASP_v3 max_iterations=10   500     10000       100     100%       43.55       43.55       45.00     100%  
+GRASP_v3 max_iterations=10   500     20000       100     100%       44.04       44.04       45.00     100%  
+GRASP_v3 max_iterations=10   1000    10000       100     100%       44.06       44.06       45.00      86%  
+GRASP_v3 max_iterations=10   1000    20000       100     100%       45.00       45.00       45.00      14%  
+GRASP_v3 max_iterations=10   2500    10000       100     100%       44.16       44.16       45.00      98%  
+GRASP_v3 max_iterations=10   2500    20000       100     100%       45.00       45.00       45.00      22%  
+GRASP_v3 max_iterations=50   500     10000       100     100%       44.37       44.37       45.00     100%  
+GRASP_v3 max_iterations=50   500     20000       100     100%       44.63       44.63       45.00     100%  
+GRASP_v3 max_iterations=50   1000    10000       100     100%       44.55       44.55       45.00     100%  
+GRASP_v3 max_iterations=50   1000    20000       100     100%       45.00       45.00       45.00      61%  
+GRASP_v3 max_iterations=50   2500    10000       100     100%       44.74       44.74       45.00     100%  
+GRASP_v3 max_iterations=50   2500    20000       100     100%       45.00       45.00       45.00      77%  
+GRASP_v3 max_iterations=100  500     10000       100     100%       44.62       44.62       45.00     100%  
+GRASP_v3 max_iterations=100  500     20000       100     100%       44.86       44.86       45.00     100%  
+GRASP_v3 max_iterations=100  1000    10000       100     100%       44.73       44.73       45.00     100%  
+GRASP_v3 max_iterations=100  1000    20000       100     100%       45.00       45.00       45.00      81%  
+GRASP_v3 max_iterations=100  2500    10000       100     100%       44.84       44.84       45.00     100%  
+GRASP_v3 max_iterations=100  2500    20000       100     100%       45.00       45.00       45.00      95%  
+GRASP_v3 max_iterations=200  500     10000       100     100%       44.73       44.73       45.00     100%  
+GRASP_v3 max_iterations=200  500     20000       100     100%       44.93       44.93       45.00     100%  
+GRASP_v3 max_iterations=200  1000    10000       100     100%       44.88       44.88       45.00     100%  
+GRASP_v3 max_iterations=200  1000    20000       100     100%       45.00       45.00       45.00      98%  
+GRASP_v3 max_iterations=200  2500    10000       100     100%       44.95       44.95       45.00     100%  
+GRASP_v3 max_iterations=200  2500    20000       100     100%       45.00       45.00       45.00     100%  
+GRASP_v3 max_iterations=500  500     10000       100     100%       44.93       44.93       45.00     100%  
+GRASP_v3 max_iterations=500  500     20000       100     100%       44.99       44.99       45.00     100%  
+GRASP_v3 max_iterations=500  1000    10000       100     100%       44.99       44.99       45.00     100%  
+GRASP_v3 max_iterations=500  1000    20000       100     100%       45.00       45.00       45.00     100%  
+GRASP_v3 max_iterations=500  2500    10000       100     100%       45.00       45.00       45.00     100%  
+GRASP_v3 max_iterations=500  2500    20000       100     100%       45.00       45.00       45.00     100%  
+
+Total: 3000 de 3000 soluções viáveis (100.0%)
+
+Colunas: n = soluções no grupo; viaveis = % que respeitam todas as restrições;
+fit.todas / fit.viaveis = fitness médio de todas / só das viáveis; melhor.viav = maior
+fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.
+do_grasp = % das soluções finais que vieram de uma iteração do GRASP (que alcançou ou
+superou o Greedy); o resto é a semente gulosa, que nenhuma iteração alcançou.
+Regras: orçamento = hotel x dias + locais; distância de cada dia inclui a volta ao
+hotel; categoria = locais seguidos da mesma categoria; nenhum local se repete na viagem.

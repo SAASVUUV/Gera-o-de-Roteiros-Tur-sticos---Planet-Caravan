@@ -215,6 +215,7 @@ struct GroupSummary {
     double fitness_sum = 0, feasible_fitness_sum = 0;
     double best_feasible = -1;
     std::map<std::string, int> violations; // tipo -> soluções com essa violação
+    int with_origin = 0, origin_grasp = 0;  // 7ª coluna (GRASP_v3 em diante)
 };
 
 } // namespace
@@ -239,7 +240,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("não foi possível escrever em " + options.output);
         }
         output << "secao\talgorithm\tbudget\ttotal_distance\ttime\tfitness\tfitness_recalculado\tviavel\tcusto"
-                  "\tdistancia_max\tdistancias_por_dia\tlocais_por_dia\tmax_categoria_seguida\tviolacoes\troute\n";
+                  "\tdistancia_max\tdistancias_por_dia\tlocais_por_dia\tmax_categoria_seguida\tviolacoes\torigem\troute\n";
 
         std::vector<GroupSummary> groups;
         std::map<std::string, size_t> group_index;
@@ -263,6 +264,13 @@ int main(int argc, char** argv) {
 
             const FeasibilityReport report = check_feasibility(route, places_parameters, users);
 
+            // 7ª coluna: origem da solução ("greedy" ou "grasp"), desde a GRASP_v3.
+            // Arquivos antigos podem ter outras colunas extras ("None"), que são ignoradas.
+            std::string origin = record.fields.size() >= 7 ? trim(record.fields[6]) : "";
+            if (origin != "greedy" && origin != "grasp") {
+                origin.clear();
+            }
+
             if (std::abs(report.fitness - reported_fitness) > 1e-9) {
                 ++fitness_mismatches;
             }
@@ -278,7 +286,8 @@ int main(int argc, char** argv) {
                    << std::setprecision(1) << max_distance << std::defaultfloat << std::setprecision(6) << '\t'
                    << join_numbers(report.daily_distance, 1) << '\t' << join_numbers(report.daily_places, 0)
                    << '\t' << report.max_consecutive_category << '\t'
-                   << (report.violations.empty() ? "-" : join(report.violations, ";")) << '\t' << "["
+                   << (report.violations.empty() ? "-" : join(report.violations, ";")) << '\t'
+                   << (origin.empty() ? "-" : origin) << '\t' << "["
                    << join_numbers(route, 0) << "]" << '\n';
 
             // resumo por grupo (seção, algoritmo, budget, distância)
@@ -300,6 +309,10 @@ int main(int argc, char** argv) {
                 group.feasible += 1;
                 group.feasible_fitness_sum += reported_fitness;
                 group.best_feasible = std::max(group.best_feasible, reported_fitness);
+            }
+            if (!origin.empty()) {
+                group.with_origin += 1;
+                group.origin_grasp += origin == "grasp";
             }
             std::map<std::string, bool> types;
             for (const std::string& violation : report.violations) {
@@ -326,10 +339,19 @@ int main(int argc, char** argv) {
             label_width = std::max(label_width, static_cast<int>(label.size()) + 2);
         }
 
+        // coluna de origem só aparece se o arquivo tiver a 7ª coluna
+        bool has_origin = false;
+        for (const GroupSummary& group : groups) {
+            has_origin = has_origin || group.with_origin > 0;
+        }
+
         summary << std::left << std::setw(label_width) << "secao" << std::setw(8) << "budget" << std::setw(9) << "dist"
                   << std::right << std::setw(6) << "n" << std::setw(9) << "viaveis" << std::setw(12)
-                  << "fit.todas" << std::setw(12) << "fit.viaveis" << std::setw(12) << "melhor.viav"
-                  << "  violacoes\n";
+                  << "fit.todas" << std::setw(12) << "fit.viaveis" << std::setw(12) << "melhor.viav";
+        if (has_origin) {
+            summary << std::setw(9) << "do_grasp";
+        }
+        summary << "  violacoes\n";
 
         int total = 0, total_feasible = 0;
         for (const GroupSummary& group : groups) {
@@ -350,6 +372,14 @@ int main(int argc, char** argv) {
             } else {
                 summary << std::setw(12) << "-" << std::setw(12) << "-";
             }
+            if (has_origin) {
+                if (group.with_origin > 0) {
+                    summary << std::setw(8) << std::setprecision(0) << 100.0 * group.origin_grasp / group.with_origin
+                            << "%";
+                } else {
+                    summary << std::setw(9) << "-";
+                }
+            }
             summary << "  " << violations.str() << "\n";
         }
 
@@ -362,7 +392,12 @@ int main(int argc, char** argv) {
         }
         summary << "\nColunas: n = soluções no grupo; viaveis = % que respeitam todas as restrições;\n"
                    "fit.todas / fit.viaveis = fitness médio de todas / só das viáveis; melhor.viav = maior\n"
-                   "fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.\n"
+                   "fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.\n";
+        if (has_origin) {
+            summary << "do_grasp = % das soluções finais que vieram de uma iteração do GRASP (que alcançou ou\n"
+                       "superou o Greedy); o resto é a semente gulosa, que nenhuma iteração alcançou.\n";
+        }
+        summary <<
                    "Regras: orçamento = hotel x dias + locais; distância de cada dia inclui a volta ao\n"
                    "hotel; categoria = locais seguidos da mesma categoria; nenhum local se repete na viagem.\n";
 
