@@ -21,6 +21,9 @@ struct PlacesParameters {
     // places_available na ordem em que o Greedy os percorre (nota decrescente,
     // empates na ordem do argsort do numpy; ver scripts/export_instance.py)
     std::vector<int> greedy_order;
+    // Só para exibir roteiros (names.tsv); ficam vazios se o arquivo não existir.
+    std::vector<std::string> names; // nome do local
+    std::vector<std::string> types; // tipo original do CSV, ex.: "Praias"
     std::vector<double> distance_data;  // places_parameters["distance_matrix"], linha a linha
     size_t size = 0;                    // quantidade de locais
 

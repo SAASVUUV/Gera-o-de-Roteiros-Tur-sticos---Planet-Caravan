@@ -4,7 +4,8 @@
 // Rode a partir da raiz do repositório:
 //
 //     cpp/build/check_results "Results Analysis/My Results/results.txt"
-//         [--output ARQUIVO.tsv] [--summary ARQUIVO.txt] [--instance Input/RJ_instance]
+//         [--output ARQUIVO.tsv] [--summary ARQUIVO.txt] [--itineraries ARQUIVO.txt]
+//         [--instance Input/RJ_instance]
 //         [--amount-days N] [--daily-places N] [--category N]
 //
 // O arquivo de resultados só traz budget e total_distance de cada linha. Os
@@ -19,7 +20,9 @@
 //   - um TSV com uma linha por solução e as colunas da verificação
 //     (padrão: <arquivo>_checked.tsv, ao lado do original);
 //   - um resumo por grupo, mostrado no terminal e salvo em arquivo
-//     (padrão: <arquivo>_summary.txt, ao lado do original).
+//     (padrão: <arquivo>_summary.txt, ao lado do original);
+//   - o melhor roteiro viável de cada grupo, com os nomes dos locais
+//     (padrão: <arquivo>_roteiros.txt, ao lado do original).
 
 #include <chrono>
 #include <cmath>
@@ -37,6 +40,7 @@
 #include "../instance.hpp"
 #include "../model/feasibility.hpp"
 #include "../operations/aux.hpp"
+#include "../operations/itinerary.hpp"
 
 namespace {
 
@@ -44,6 +48,7 @@ struct Options {
     std::string input;
     std::string output;
     std::string summary;
+    std::string itineraries;
     std::string instance = "Input/RJ_instance";
     std::optional<int> amount_days, daily_places, category;
 };
@@ -94,6 +99,8 @@ Options parse_options(int argc, char** argv) {
             options.output = next();
         } else if (argument == "--summary") {
             options.summary = next();
+        } else if (argument == "--itineraries") {
+            options.itineraries = next();
         } else if (argument == "--instance") {
             options.instance = next();
         } else if (argument == "--amount-days") {
@@ -103,7 +110,8 @@ Options parse_options(int argc, char** argv) {
         } else if (argument == "--category") {
             options.category = std::stoi(next());
         } else if (argument == "-h" || argument == "--help") {
-            std::cout << "uso: check_results ARQUIVO [--output ARQUIVO.tsv] [--summary ARQUIVO.txt] [--instance DIR]\n"
+            std::cout << "uso: check_results ARQUIVO [--output ARQUIVO.tsv] [--summary ARQUIVO.txt] [--itineraries ARQUIVO.txt]\n"
+                         "                    [--instance DIR]\n"
                          "                    [--amount-days N] [--daily-places N] [--category N]\n";
             std::exit(0);
         } else if (!argument.empty() && argument[0] == '-') {
@@ -123,6 +131,9 @@ Options parse_options(int argc, char** argv) {
     }
     if (options.summary.empty()) {
         options.summary = (path.parent_path() / (path.stem().string() + "_summary.txt")).string();
+    }
+    if (options.itineraries.empty()) {
+        options.itineraries = (path.parent_path() / (path.stem().string() + "_roteiros.txt")).string();
     }
     return options;
 }
@@ -216,6 +227,10 @@ struct GroupSummary {
     double best_feasible = -1;
     std::map<std::string, int> violations; // tipo -> soluções com essa violação
     int with_origin = 0, origin_grasp = 0;  // 7ª coluna (GRASP_v3 em diante)
+    // melhor solução viável (a primeira, em caso de empate)
+    std::vector<int> best_route;
+    int best_execution = 0; // posição da execução no grupo, começando em 1
+    std::string best_origin;
 };
 
 } // namespace
@@ -240,7 +255,7 @@ int main(int argc, char** argv) {
             throw std::runtime_error("não foi possível escrever em " + options.output);
         }
         output << "secao\talgorithm\tbudget\ttotal_distance\ttime\tfitness\tfitness_recalculado\tviavel\tcusto"
-                  "\tdistancia_max\tdistancias_por_dia\tlocais_por_dia\tmax_categoria_seguida\tviolacoes\torigem\troute\n";
+                  "\tdistancia_max\tdistancias_por_dia\tlocais_por_dia\tmax_categoria_seguida\tviolacoes\torigem\troteiro\troute\n";
 
         std::vector<GroupSummary> groups;
         std::map<std::string, size_t> group_index;
@@ -287,7 +302,8 @@ int main(int argc, char** argv) {
                    << join_numbers(report.daily_distance, 1) << '\t' << join_numbers(report.daily_places, 0)
                    << '\t' << report.max_consecutive_category << '\t'
                    << (report.violations.empty() ? "-" : join(report.violations, ";")) << '\t'
-                   << (origin.empty() ? "-" : origin) << '\t' << "["
+                   << (origin.empty() ? "-" : origin) << '\t' << compact_itinerary(route, places_parameters)
+                   << '\t' << "["
                    << join_numbers(route, 0) << "]" << '\n';
 
             // resumo por grupo (seção, algoritmo, budget, distância)
@@ -308,6 +324,11 @@ int main(int argc, char** argv) {
             if (report.feasible) {
                 group.feasible += 1;
                 group.feasible_fitness_sum += reported_fitness;
+                if (reported_fitness > group.best_feasible) {
+                    group.best_route = route;
+                    group.best_execution = group.count;
+                    group.best_origin = origin;
+                }
                 group.best_feasible = std::max(group.best_feasible, reported_fitness);
             }
             if (!origin.empty()) {
@@ -403,6 +424,36 @@ int main(int argc, char** argv) {
 
         std::cout << summary.str();
 
+        // --- melhor roteiro viável de cada grupo, com nomes -------------------
+        std::ofstream itineraries_file(options.itineraries);
+        if (!itineraries_file) {
+            throw std::runtime_error("não foi possível escrever em " + options.itineraries);
+        }
+        itineraries_file << "Melhores roteiros viáveis de: " << options.input << "\n"
+                         << "Gerado em: " << current_time() << " por cpp/build/check_results\n"
+                         << "Um roteiro por grupo: a solução viável de maior fitness (a primeira, se houver empate).\n"
+                         << "Distâncias a pé pela matriz de distâncias; '+ X m' é o trecho desde o local anterior.\n";
+        if (places_parameters.names.empty()) {
+            itineraries_file << "AVISO: " << options.instance << "/names.tsv não existe; os locais aparecem como "
+                             << "#ID (rode: python scripts/export_instance.py)\n";
+        }
+        for (const GroupSummary& group : groups) {
+            const std::string label = group.section.empty() ? group.algorithm : group.section;
+            itineraries_file << "\n" << std::string(100, '=') << "\n"
+                             << label << " | orçamento " << group.budget << " | distância " << group.total_distance
+                             << " m por dia\n";
+            if (group.feasible == 0) {
+                itineraries_file << "  Nenhuma solução viável neste grupo.\n";
+                continue;
+            }
+            itineraries_file << "  Melhor de " << group.count << " execuções: execução " << group.best_execution
+                             << (group.best_origin.empty() ? "" : ", origem " + group.best_origin) << "\n\n";
+            UsersParameters group_users = users;
+            group_users.budget = std::stod(group.budget);
+            group_users.total_distance = std::stod(group.total_distance);
+            itineraries_file << detailed_itinerary(group.best_route, places_parameters, group_users);
+        }
+
         std::ofstream summary_file(options.summary);
         if (!summary_file) {
             throw std::runtime_error("não foi possível escrever em " + options.summary);
@@ -410,6 +461,7 @@ int main(int argc, char** argv) {
         summary_file << summary.str();
 
         std::cout << "Resumo salvo em: " << options.summary << "\n";
+        std::cout << "Melhores roteiros (com nomes) em: " << options.itineraries << "\n";
         std::cout << "Detalhes por solução em: " << options.output << "\n";
 
     } catch (const std::exception& error) {

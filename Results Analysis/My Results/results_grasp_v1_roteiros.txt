@@ -1,0 +1,454 @@
+Melhores roteiros viáveis de: Results Analysis/My Results/results_grasp_v1.txt
+Gerado em: 2026-11-01 17:12 por cpp/build/check_results
+Um roteiro por grupo: a solução viável de maior fitness (a primeira, se houver empate).
+Distâncias a pé pela matriz de distâncias; '+ X m' é o trecho desde o local anterior.
+
+====================================================================================================
+GRASP_v1 max_iterations=10 | orçamento 500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 32
+
+  Hotel: Brazuca's Hostel (nota 4,0, R$ 50 por diária, ID 585)
+
+  Dia 1: 4 locais, 8.599 m a pé (limite 10.000 m)
+     sai do hotel
+     + 2.437 m    1. PlayGrowler               restaurante                                 nota 5,0  R$ 46     ID 1722
+     + 494 m      2. A Cena Muda               atração: Lojas especializadas e de suvenir  nota 4,5  R$ 50     ID 1071
+     + 2.210 m    3. Gelato Wendling           restaurante                                 nota 5,0  R$ 15     ID 1773
+     + 1.811 m    4. Pasta & Vino              restaurante                                 nota 5,0  R$ 28     ID 1845
+     + 1.647 m    volta ao hotel
+
+  Dia 2: 4 locais, 4.772 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.266 m    1. Cafe Ao Leu               restaurante                                 nota 5,0  R$ 20     ID 1852
+     + 1.075 m    2. Paroquia da Ressurreicao  atração: Igrejas e catedrais                nota 5,0  R$ 50     ID 843
+     + 622 m      3. Escape 60 - Copacabana    atração: Jogos de fuga e escape             nota 5,0  R$ 50     ID 1539
+     + 1.397 m    4. Vem de Trilha             atração: Trilhas para caminhada             nota 5,0  R$ 50     ID 758
+     + 412 m      volta ao hotel
+
+  Custo: R$ 409 de R$ 500 (hotel R$ 100 por 2 diárias + locais R$ 309)
+  Fitness: 43,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=10 | orçamento 500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 54
+
+  Hotel: Vila Carioca Hostel (nota 4,5, R$ 50 por diária, ID 42)
+
+  Dia 1: 4 locais, 15.687 m a pé (limite 20.000 m)
+     sai do hotel
+     + 2.719 m    1. Hazan Unique                         atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 3.640 m    2. Livraria de Musica Toca do Vinicius  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1427
+     + 2.450 m    3. Mestre-Cervejeiro.com                atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 828
+     + 6.291 m    4. Emporio Sao Roque - Botafogo         restaurante                                 nota 5,0  R$ 35     ID 1814
+     + 587 m      volta ao hotel
+
+  Dia 2: 4 locais, 13.103 m a pé (limite 20.000 m)
+     sai do hotel
+     + 2.623 m    1. Motim Hideout                        restaurante                                 nota 5,0  R$ 40     ID 1719
+     + 1.687 m    2. Spa Holistico Alex Lisboa            atração: Spas                               nota 5,0  R$ 50     ID 722
+     + 3.447 m    3. Teatro da Lagoa                      atração: Teatros                            nota 5,0  R$ 50     ID 1155
+     + 4.333 m    4. Com.Cafe                             restaurante                                 nota 5,0  R$ 25     ID 1811
+     + 1.014 m    volta ao hotel
+
+  Custo: R$ 450 de R$ 500 (hotel R$ 100 por 2 diárias + locais R$ 350)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=10 | orçamento 1000 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 7
+
+  Hotel: Carioca da Gema B&B (nota 4,5, R$ 50 por diária, ID 518)
+
+  Dia 1: 4 locais, 8.048 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.940 m    1. Mural Babilonia              atração: Pontos de interesse                nota 5,0  R$ 50     ID 1394
+     + 1.223 m    2. Cook In Rio                  atração: Aulas de culinaria                 nota 5,0  R$ 50     ID 834
+     + 2.065 m    3. 3Cariocas Taphouse: FECHADO  restaurante                                 nota 5,0  R$ 40     ID 1823
+     + 2.163 m    4. Gusto Italia                 restaurante                                 nota 5,0  R$ 200    ID 1612
+     + 658 m      volta ao hotel
+
+  Dia 2: 4 locais, 8.944 m a pé (limite 10.000 m)
+     sai do hotel
+     + 477 m      1. Copacabana Palace Spa        atração: Spas                               nota 5,0  R$ 50     ID 1211
+     + 3.735 m    2. Uma Chef em Casa             atração: Aulas de culinaria                 nota 5,0  R$ 50     ID 1428
+     + 3.592 m    3. Motim Hideout                restaurante                                 nota 5,0  R$ 40     ID 1719
+     + 599 m      4. Hazan Unique                 atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 541 m      volta ao hotel
+
+  Custo: R$ 630 de R$ 1000 (hotel R$ 100 por 2 diárias + locais R$ 530)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=10 | orçamento 1000 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 74
+
+  Hotel: Maison d'hotes Chez Mireille (nota 5,0, R$ 288 por diária, ID 608)
+
+  Dia 1: 4 locais, 18.947 m a pé (limite 20.000 m)
+     sai do hotel
+     + 4.672 m    1. Taj Mahal Restaurante     restaurante                                 nota 4,5  R$ 110    ID 1702
+     + 7.173 m    2. Trilha do Morro da Urca   atração: Trilhas para caminhada             nota 5,0  R$ 50     ID 810
+     + 6.336 m    3. Cafe Ao Leu               restaurante                                 nota 5,0  R$ 20     ID 1852
+     + 538 m      4. Pasta & Vino              restaurante                                 nota 5,0  R$ 28     ID 1845
+     + 228 m      volta ao hotel
+
+  Dia 2: 4 locais, 11.510 m a pé (limite 20.000 m)
+     sai do hotel
+     + 3.451 m    1. Mestre-Cervejeiro.com     atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 828
+     + 2.296 m    2. DC La Em Cima             restaurante                                 nota 5,0  R$ 50     ID 1792
+     + 3.084 m    3. Espaco Havaianas          atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 851
+     + 2.111 m    4. Paroquia da Ressurreicao  atração: Igrejas e catedrais                nota 5,0  R$ 50     ID 843
+     + 569 m      volta ao hotel
+
+  Custo: R$ 984 de R$ 1000 (hotel R$ 576 por 2 diárias + locais R$ 408)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=10 | orçamento 2500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 55
+
+  Hotel: Rio Guest House ( Marta's Guest House) (nota 5,0, R$ 622 por diária, ID 459)
+
+  Dia 1: 4 locais, 9.046 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.811 m    1. Mestre-Cervejeiro.com                                    atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 828
+     + 2.450 m    2. Livraria de Musica Toca do Vinicius                      atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1427
+     + 1.719 m    3. Spa Holistico Alex Lisboa                                atração: Spas                               nota 5,0  R$ 50     ID 722
+     + 554 m      4. Icae Acai Store                                          restaurante                                 nota 5,0  R$ 20     ID 1762
+     + 512 m      volta ao hotel
+
+  Dia 2: 4 locais, 8.320 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.849 m    1. Igreja Nossa Senhora de Copacabana e Santa Rosa de Lima  atração: Igrejas e catedrais                nota 4,5  R$ 50     ID 1415
+     + 1.577 m    2. Cafe Ao Leu                                              restaurante                                 nota 5,0  R$ 20     ID 1852
+     + 1.836 m    3. Uma Chef em Casa                                         atração: Aulas de culinaria                 nota 5,0  R$ 50     ID 1428
+     + 1.826 m    4. Museu de Favela                                          atração: Museus especializados              nota 5,0  R$ 50     ID 1354
+     + 1.232 m    volta ao hotel
+
+  Custo: R$ 1584 de R$ 2500 (hotel R$ 1244 por 2 diárias + locais R$ 340)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=10 | orçamento 2500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 10
+
+  Hotel: Abraco Carioca - Favela Hostel (nota 5,0, R$ 50 por diária, ID 436)
+
+  Dia 1: 4 locais, 18.143 m a pé (limite 20.000 m)
+     sai do hotel
+     + 7.847 m    1. Pipper Club                   atração: Baladas                            nota 5,0  R$ 50     ID 702
+     + 1.516 m    2. Transrio Service              atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1542
+     + 6.573 m    3. Estadio de General Severiano  atração: Arenas e estadios                  nota 4,5  R$ 50     ID 1430
+     + 1.110 m    4. Salutem Cervejas: FECHADO     restaurante                                 nota 5,0  R$ 40     ID 1625
+     + 1.098 m    volta ao hotel
+
+  Dia 2: 4 locais, 16.958 m a pé (limite 20.000 m)
+     sai do hotel
+     + 7.643 m    1. Cazota Bar                    restaurante                                 nota 5,0  R$ 25     ID 1723
+     + 7.008 m    2. Hazan Unique                  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 624 m      3. Trilha a Pe                   atração: Outras atividades ao ar livre      nota 5,0  R$ 50     ID 1335
+     + 280 m      4. Gusto Italia                  restaurante                                 nota 5,0  R$ 200    ID 1612
+     + 1.404 m    volta ao hotel
+
+  Custo: R$ 615 de R$ 2500 (hotel R$ 100 por 2 diárias + locais R$ 515)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=50 | orçamento 500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 63
+
+  Hotel: Rio Dolphin Inn (nota 5,0, R$ 50 por diária, ID 90)
+
+  Dia 1: 4 locais, 8.276 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.421 m    1. Mestre-Cervejeiro.com                atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 828
+     + 2.450 m    2. Livraria de Musica Toca do Vinicius  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1427
+     + 1.436 m    3. Paroquia da Ressurreicao             atração: Igrejas e catedrais                nota 5,0  R$ 50     ID 843
+     + 612 m      4. Pasta & Vino                         restaurante                                 nota 5,0  R$ 28     ID 1845
+     + 357 m      volta ao hotel
+
+  Dia 2: 4 locais, 9.679 m a pé (limite 10.000 m)
+     sai do hotel
+     + 2.062 m    1. Gelato Wendling                      restaurante                                 nota 5,0  R$ 15     ID 1773
+     + 2.130 m    2. Teatro Poeira                        atração: Teatros                            nota 4,5  R$ 50     ID 1122
+     + 2.914 m    3. Casa das Natas Copacabana            restaurante                                 nota 5,0  R$ 50     ID 1690
+     + 885 m      4. Vem de Trilha                        atração: Trilhas para caminhada             nota 5,0  R$ 50     ID 758
+     + 1.688 m    volta ao hotel
+
+  Custo: R$ 443 de R$ 500 (hotel R$ 100 por 2 diárias + locais R$ 343)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=50 | orçamento 500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 19
+
+  Hotel: Carioca da Gema B&B (nota 4,5, R$ 50 por diária, ID 518)
+
+  Dia 1: 4 locais, 19.582 m a pé (limite 20.000 m)
+     sai do hotel
+     + 8.104 m    1. igreja da Ordem Terceira de Nossa Senhora do Monte do Carmo  atração: Locais historicos                  nota 5,0  R$ 50     ID 747
+     + 8.010 m    2. Hazan Unique                                                 atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 717 m      3. Gelato Wendling                                              restaurante                                 nota 5,0  R$ 15     ID 1773
+     + 1.570 m    4. Salutem Cervejas: FECHADO                                    restaurante                                 nota 5,0  R$ 40     ID 1625
+     + 1.181 m    volta ao hotel
+
+  Dia 2: 4 locais, 15.939 m a pé (limite 20.000 m)
+     sai do hotel
+     + 2.443 m    1. 3Cariocas Taphouse: FECHADO                                  restaurante                                 nota 5,0  R$ 40     ID 1823
+     + 5.170 m    2. Paroquia da Ressurreicao                                     atração: Igrejas e catedrais                nota 5,0  R$ 50     ID 843
+     + 1.339 m    3. Caminhos Language Centre                                     atração: Aulas e workshops                  nota 5,0  R$ 50     ID 1333
+     + 5.047 m    4. Mural Babilonia                                              atração: Pontos de interesse                nota 5,0  R$ 50     ID 1394
+     + 1.940 m    volta ao hotel
+
+  Custo: R$ 445 de R$ 500 (hotel R$ 100 por 2 diárias + locais R$ 345)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=50 | orçamento 1000 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 22
+
+  Hotel: Copacabana Best Deal (nota 4,5, R$ 239 por diária, ID 633)
+
+  Dia 1: 4 locais, 8.421 m a pé (limite 10.000 m)
+     sai do hotel
+     + 2.221 m    1. Acolheita                  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 823
+     + 3.042 m    2. Casa das Natas Copacabana  restaurante                                 nota 5,0  R$ 50     ID 1690
+     + 938 m      3. Escape 60 - Copacabana     atração: Jogos de fuga e escape             nota 5,0  R$ 50     ID 1539
+     + 1.770 m    4. Gelato Wendling            restaurante                                 nota 5,0  R$ 15     ID 1773
+     + 451 m      volta ao hotel
+
+  Dia 2: 4 locais, 7.642 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.519 m    1. Spa Holistico Alex Lisboa  atração: Spas                               nota 5,0  R$ 50     ID 722
+     + 554 m      2. Icae Acai Store            restaurante                                 nota 5,0  R$ 20     ID 1762
+     + 3.431 m    3. Mural Babilonia            atração: Pontos de interesse                nota 5,0  R$ 50     ID 1394
+     + 1.148 m    4. Trilha a Pe                atração: Outras atividades ao ar livre      nota 5,0  R$ 50     ID 1335
+     + 990 m      volta ao hotel
+
+  Custo: R$ 813 de R$ 1000 (hotel R$ 478 por 2 diárias + locais R$ 335)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=50 | orçamento 1000 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 62
+
+  Hotel: Babilonia Rio Hostel (nota 5,0, R$ 173 por diária, ID 418)
+
+  Dia 1: 4 locais, 19.243 m a pé (limite 20.000 m)
+     sai do hotel
+     + 1.565 m    1. Gusto Italia               restaurante                   nota 5,0  R$ 200    ID 1612
+     + 2.363 m    2. bolo doamor: FECHADO       restaurante                   nota 5,0  R$ 25     ID 1766
+     + 6.100 m    3. Coffeetown - Centro Rio    restaurante                   nota 5,0  R$ 50     ID 1884
+     + 3.407 m    4. Teatro Prudential          atração: Teatros              nota 5,0  R$ 50     ID 855
+     + 5.809 m    volta ao hotel
+
+  Dia 2: 4 locais, 15.586 m a pé (limite 20.000 m)
+     sai do hotel
+     + 3.514 m    1. Spa Holistico Alex Lisboa  atração: Spas                 nota 5,0  R$ 50     ID 722
+     + 2.820 m    2. Com.Cafe                   restaurante                   nota 5,0  R$ 25     ID 1811
+     + 2.188 m    3. Gelato Wendling            restaurante                   nota 5,0  R$ 15     ID 1773
+     + 2.326 m    4. Paroquia da Ressurreicao   atração: Igrejas e catedrais  nota 5,0  R$ 50     ID 843
+     + 4.738 m    volta ao hotel
+
+  Custo: R$ 811 de R$ 1000 (hotel R$ 346 por 2 diárias + locais R$ 465)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=50 | orçamento 2500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 13
+
+  Hotel: Rio Panoramic (nota 5,0, R$ 542 por diária, ID 379)
+
+  Dia 1: 4 locais, 8.559 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.497 m    1. Angaro 47               restaurante                                 nota 5,0  R$ 42     ID 1737
+     + 3.069 m    2. Igara Moda Arte         atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1449
+     + 2.020 m    3. Lapa e Arte             atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 651
+     + 581 m      4. Cazota Bar              restaurante                                 nota 5,0  R$ 25     ID 1723
+     + 1.393 m    volta ao hotel
+
+  Dia 2: 4 locais, 8.241 m a pé (limite 10.000 m)
+     sai do hotel
+     + 2.238 m    1. Casa do Choro           atração: Shows                              nota 5,0  R$ 50     ID 1492
+     + 1.088 m    2. l'atelier du cuisinier  restaurante                                 nota 5,0  R$ 299    ID 1946
+     + 2.012 m    3. Sabor Peruano En Rio    restaurante                                 nota 5,0  R$ 50     ID 1838
+     + 887 m      4. Pipper Club             atração: Baladas                            nota 5,0  R$ 50     ID 702
+     + 2.015 m    volta ao hotel
+
+  Custo: R$ 1700 de R$ 2500 (hotel R$ 1084 por 2 diárias + locais R$ 616)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=50 | orçamento 2500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 2
+
+  Hotel: Casa Amarela Guest House (nota 5,0, R$ 224 por diária, ID 574)
+
+  Dia 1: 4 locais, 19.016 m a pé (limite 20.000 m)
+     sai do hotel
+     + 8.229 m    1. igreja da Ordem Terceira de Nossa Senhora do Monte do Carmo  atração: Locais historicos                  nota 5,0  R$ 50     ID 747
+     + 1.041 m    2. Coffeetown - Centro Rio                                      restaurante                                 nota 5,0  R$ 50     ID 1884
+     + 6.543 m    3. 3Cariocas Taphouse: FECHADO                                  restaurante                                 nota 5,0  R$ 40     ID 1823
+     + 476 m      4. bolo doamor: FECHADO                                         restaurante                                 nota 5,0  R$ 25     ID 1766
+     + 2.726 m    volta ao hotel
+
+  Dia 2: 4 locais, 19.892 m a pé (limite 20.000 m)
+     sai do hotel
+     + 8.034 m    1. VTC Rio                                                      atração: Taxis e traslados                  nota 5,0  R$ 50     ID 727
+     + 7.619 m    2. Gusto Italia                                                 restaurante                                 nota 5,0  R$ 200    ID 1612
+     + 411 m      3. Hazan Unique                                                 atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 802 m      4. Rio&Learn Portuguese School                                  atração: Aulas e workshops                  nota 5,0  R$ 50     ID 1229
+     + 3.027 m    volta ao hotel
+
+  Custo: R$ 963 de R$ 2500 (hotel R$ 448 por 2 diárias + locais R$ 515)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=100 | orçamento 500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 24
+
+  Hotel: Santa Teresa Iva (nota 5,0, R$ 50 por diária, ID 344)
+
+  Dia 1: 4 locais, 6.438 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.522 m    1. Casa do Choro                                                atração: Shows                              nota 5,0  R$ 50     ID 1492
+     + 920 m      2. igreja da Ordem Terceira de Nossa Senhora do Monte do Carmo  atração: Locais historicos                  nota 5,0  R$ 50     ID 747
+     + 2.213 m    3. Transrio Service                                             atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1542
+     + 494 m      4. Angaro 47                                                    restaurante                                 nota 5,0  R$ 42     ID 1737
+     + 1.289 m    volta ao hotel
+
+  Dia 2: 4 locais, 8.132 m a pé (limite 10.000 m)
+     sai do hotel
+     + 2.508 m    1. Casa Naara                                                   atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 746
+     + 2.236 m    2. VTC Rio                                                      atração: Taxis e traslados                  nota 5,0  R$ 50     ID 727
+     + 1.005 m    3. Cazota Bar                                                   restaurante                                 nota 5,0  R$ 25     ID 1723
+     + 1.083 m    4. Pipper Club                                                  atração: Baladas                            nota 5,0  R$ 50     ID 702
+     + 1.299 m    volta ao hotel
+
+  Custo: R$ 467 de R$ 500 (hotel R$ 100 por 2 diárias + locais R$ 367)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=100 | orçamento 500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 19
+
+  Hotel: Abraco Carioca - Favela Hostel (nota 5,0, R$ 50 por diária, ID 436)
+
+  Dia 1: 4 locais, 18.313 m a pé (limite 20.000 m)
+     sai do hotel
+     + 8.070 m    1. Casa do Choro                atração: Shows                              nota 5,0  R$ 50     ID 1492
+     + 2.411 m    2. Teatro Prudential            atração: Teatros                            nota 5,0  R$ 50     ID 855
+     + 1.511 m    3. Soul Fun Transfer            atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1426
+     + 880 m      4. Vixi                         restaurante                                 nota 5,0  R$ 60     ID 1892
+     + 5.441 m    volta ao hotel
+
+  Dia 2: 4 locais, 19.103 m a pé (limite 20.000 m)
+     sai do hotel
+     + 6.938 m    1. Teatro da Lagoa              atração: Teatros                            nota 5,0  R$ 50     ID 1155
+     + 1.285 m    2. Mestre-Cervejeiro.com        atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 828
+     + 4.582 m    3. Vem de Trilha                atração: Trilhas para caminhada             nota 5,0  R$ 50     ID 758
+     + 3.304 m    4. 3Cariocas Taphouse: FECHADO  restaurante                                 nota 5,0  R$ 40     ID 1823
+     + 2.995 m    volta ao hotel
+
+  Custo: R$ 500 de R$ 500 (hotel R$ 100 por 2 diárias + locais R$ 400)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=100 | orçamento 1000 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 20
+
+  Hotel: Casa Amarela Hostel (nota 4,5, R$ 50 por diária, ID 592)
+
+  Dia 1: 4 locais, 7.880 m a pé (limite 10.000 m)
+     sai do hotel
+     + 721 m      1. igreja da Ordem Terceira de Nossa Senhora do Monte do Carmo  atração: Locais historicos                  nota 5,0  R$ 50     ID 747
+     + 1.334 m    2. Vitali Gelato                                                restaurante                                 nota 5,0  R$ 16     ID 1740
+     + 1.726 m    3. Casa do Choro                                                atração: Shows                              nota 5,0  R$ 50     ID 1492
+     + 1.461 m    4. VTC Rio                                                      atração: Taxis e traslados                  nota 5,0  R$ 50     ID 727
+     + 2.637 m    volta ao hotel
+
+  Dia 2: 4 locais, 7.844 m a pé (limite 10.000 m)
+     sai do hotel
+     + 2.637 m    1. Transrio Service                                             atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1542
+     + 1.516 m    2. Pipper Club                                                  atração: Baladas                            nota 5,0  R$ 50     ID 702
+     + 898 m      3. Lapa e Arte                                                  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 651
+     + 468 m      4. La OLLA - home bistro                                        restaurante                                 nota 5,0  R$ 130    ID 1809
+     + 2.325 m    volta ao hotel
+
+  Custo: R$ 546 de R$ 1000 (hotel R$ 100 por 2 diárias + locais R$ 446)
+  Fitness: 44,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=100 | orçamento 1000 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 21
+
+  Hotel: Nova Era Vidigal Coliving and Coworking (nota 5,0, R$ 50 por diária, ID 564)
+
+  Dia 1: 4 locais, 19.728 m a pé (limite 20.000 m)
+     sai do hotel
+     + 8.613 m    1. Trilha a Pe             atração: Outras atividades ao ar livre  nota 5,0  R$ 50     ID 1335
+     + 1.278 m    2. Gelato Wendling         restaurante                             nota 5,0  R$ 15     ID 1773
+     + 1.176 m    3. Cook In Rio             atração: Aulas de culinaria             nota 5,0  R$ 50     ID 834
+     + 814 m      4. Motim Hideout           restaurante                             nota 5,0  R$ 40     ID 1719
+     + 7.846 m    volta ao hotel
+
+  Dia 2: 4 locais, 17.746 m a pé (limite 20.000 m)
+     sai do hotel
+     + 6.139 m    1. Escape 60 - Copacabana  atração: Jogos de fuga e escape         nota 5,0  R$ 50     ID 1539
+     + 2.808 m    2. Gusto Italia            restaurante                             nota 5,0  R$ 200    ID 1612
+     + 2.276 m    3. Icae Acai Store         restaurante                             nota 5,0  R$ 20     ID 1762
+     + 2.793 m    4. Burgers Rio             restaurante                             nota 5,0  R$ 12     ID 1818
+     + 3.731 m    volta ao hotel
+
+  Custo: R$ 537 de R$ 1000 (hotel R$ 100 por 2 diárias + locais R$ 437)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=100 | orçamento 2500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 58
+
+  Hotel: Casa Beleza (nota 5,0, R$ 437 por diária, ID 578)
+
+  Dia 1: 4 locais, 8.510 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.401 m    1. Rio Squash Clube        atração: Complexos esportivos               nota 5,0  R$ 50     ID 723
+     + 2.021 m    2. Casa do Choro           atração: Shows                              nota 5,0  R$ 50     ID 1492
+     + 1.088 m    3. l'atelier du cuisinier  restaurante                                 nota 5,0  R$ 299    ID 1946
+     + 1.265 m    4. Pipper Club             atração: Baladas                            nota 5,0  R$ 50     ID 702
+     + 2.735 m    volta ao hotel
+
+  Dia 2: 4 locais, 7.343 m a pé (limite 10.000 m)
+     sai do hotel
+     + 1.889 m    1. Lapa e Arte             atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 651
+     + 1.405 m    2. Transrio Service        atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1542
+     + 928 m      3. Chez Marchand           restaurante                                 nota 5,0  R$ 90     ID 1752
+     + 928 m      4. VTC Rio                 atração: Taxis e traslados                  nota 5,0  R$ 50     ID 727
+     + 2.193 m    volta ao hotel
+
+  Custo: R$ 1563 de R$ 2500 (hotel R$ 874 por 2 diárias + locais R$ 689)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+GRASP_v1 max_iterations=100 | orçamento 2500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 51
+
+  Hotel: Sugar Loft Apartments (nota 5,0, R$ 370 por diária, ID 582)
+
+  Dia 1: 4 locais, 19.308 m a pé (limite 20.000 m)
+     sai do hotel
+     + 7.401 m    1. Gelato Wendling              restaurante                                 nota 5,0  R$ 15     ID 1773
+     + 2.952 m    2. 3Cariocas Taphouse: FECHADO  restaurante                                 nota 5,0  R$ 40     ID 1823
+     + 6.323 m    3. l'atelier du cuisinier       restaurante                                 nota 5,0  R$ 299    ID 1946
+     + 1.088 m    4. Casa do Choro                atração: Shows                              nota 5,0  R$ 50     ID 1492
+     + 1.544 m    volta ao hotel
+
+  Dia 2: 4 locais, 14.474 m a pé (limite 20.000 m)
+     sai do hotel
+     + 5.733 m    1. Acolheita                    atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 823
+     + 5.942 m    2. Cazota Bar                   restaurante                                 nota 5,0  R$ 25     ID 1723
+     + 581 m      3. Lapa e Arte                  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 651
+     + 898 m      4. Pipper Club                  atração: Baladas                            nota 5,0  R$ 50     ID 702
+     + 1.320 m    volta ao hotel
+
+  Custo: R$ 1319 de R$ 2500 (hotel R$ 740 por 2 diárias + locais R$ 579)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)

@@ -109,10 +109,16 @@ Opções:
 cpp/build/check_results "Results Analysis/My Results/results.txt"
 ```
 
-O programa aceita arquivos do Python (GRASP e Greedy) e do C++. Ele faz duas coisas:
+O programa aceita arquivos do Python (GRASP e Greedy) e do C++. Ele faz três coisas:
 
 - **Resumo por grupo** (seção, budget, distância): % de soluções viáveis, fitness médio de todas e só das viáveis, melhor fitness viável e quantas soluções violam cada restrição. Ele aparece no terminal e também é salvo em `<arquivo>_summary.txt` ao lado do original (ou onde `--summary` indicar), com data e uma legenda das colunas.
-- **TSV com uma linha por solução**, em `<arquivo>_checked.tsv` ao lado do original (ou onde `--output` indicar). Ele traz custo real, distância de cada dia, locais por dia, a maior sequência de mesma categoria, as violações, o fitness recalculado e a origem da solução (`origem`, quando o arquivo tem a 7ª coluna). Dá para abrir no pandas: `pd.read_csv(..., sep="\t")`.
+- **TSV com uma linha por solução**, em `<arquivo>_checked.tsv` ao lado do original (ou onde `--output` indicar). Ele traz custo real, distância de cada dia, locais por dia, a maior sequência de mesma categoria, as violações, o fitness recalculado, a origem da solução (`origem`, quando o arquivo tem a 7ª coluna) e o roteiro com os nomes dos locais (`roteiro`, ex.: `Casa 48 | Dia 1: A > B > C > D | Dia 2: ...`). Dá para abrir no pandas: `pd.read_csv(..., sep="\t")`.
+
+- **Melhor roteiro de cada grupo, legível**, em `<arquivo>_roteiros.txt` (ou onde `--itineraries` indicar). Para cada grupo, mostra a solução viável de maior fitness: o hotel, cada dia com os locais na ordem (nome, tipo, nota, preço, ID e a distância a pé desde o local anterior), a volta ao hotel, a distância de cada dia contra o limite, o custo contra o orçamento e o fitness.
+
+Os nomes vêm de `Input/RJ_instance/names.tsv`, gravado pelo exportador. O tipo mostrado nas atrações (ex.: "Praias", "Museus de arte") é a categoria original do `RJ.csv`, que o `main.py` reduz a "atração". Sem esse arquivo, os locais aparecem como `#ID`.
+
+**Atenção aos dados:** 45 locais do `RJ.csv` têm "FECHADO" no nome (estabelecimentos fechados no TripAdvisor), a maioria restaurantes, e continuam disponíveis para todos os algoritmos, inclusive os dos autores. Na v3, 1393 das 3000 soluções incluem pelo menos um deles. Removê-los mudaria o problema (ver a regra de comparabilidade), então eles continuam disponíveis.
 
 O arquivo de resultados só traz `budget` e `total_distance` em cada linha. Os demais parâmetros vêm de `Parameters/user.json`, que precisa ter um único valor para cada um. Se tiver mais de um, informe qual usar com `--amount-days`, `--daily-places` ou `--category`.
 

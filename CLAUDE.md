@@ -49,7 +49,7 @@ The authors' GRASP in C++. The user is improving it **one versioned fix at a tim
   - **Keep the authors' cap of `amount_daily_places − 1` places per day.** That is 4, so fitness is at most 45; the paper defines 55. Do not "fix" it.
   - **Keep the construction's per-day-total category count.** With 4 places/day it is equivalent to the paper's consecutive rule.
   - **Only as a separate, explicitly requested track:** 5 places/day or other rule changes. Compare such a track only within itself, or normalize by its own maximum.
-- **Data.** `scripts/export_instance.py` runs `main.prepare_data` and `opt_call.build_places_parameters`, which were extracted from the old inline code without changing their logic. It writes `Input/RJ_instance/`: `places.tsv`, `hotels.txt`, `places_available.txt`, `greedy_order.txt` and `distance_matrix.bin` (float64, row-major). The folder is gitignored. Re-export whenever `RJ.csv` or the matrix changes.
+- **Data.** `scripts/export_instance.py` runs `main.prepare_data` and `opt_call.build_places_parameters`, which were extracted from the old inline code without changing their logic. It writes `Input/RJ_instance/`: `places.tsv`, `hotels.txt`, `places_available.txt`, `greedy_order.txt`, `names.tsv` (id, name, original CSV type for attractions; display only) and `distance_matrix.bin` (float64, row-major). The folder is gitignored. Re-export whenever `RJ.csv` or the matrix changes.
 - **Build and run** from the repo root:
   - `make -C cpp` builds one executable per file in `cpp/src/apps/` into `cpp/build/` (gitignored). The rest of `cpp/src/` is shared code. New programs, such as the user's own GRASP, go in `apps/`.
   - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_grasp_v3.txt`. Before each algorithm-parameter group it writes a `# GRASP_<version> max_iterations=N` line (Python doesn't). Each older version's file (`results_cpp.txt` for the literal translation, `results_grasp_v1.txt`, …) holds that version's output; never append to it.
@@ -59,13 +59,14 @@ The authors' GRASP in C++. The user is improving it **one versioned fix at a tim
   - Compare the per-group mean fitness against the previous version and against the authors' feasible-only results.
   - Bit-exactness with Python can only be checked against the literal translation, by checking out `70eb95a`.
 - **Feasibility checker:** `cpp/build/check_results <results file>` (`model/feasibility.cpp`).
-  - It recomputes everything from the final route. It prints a per-group summary and saves it to `<file>_summary.txt` (override with `--summary`). It writes `<file>_checked.tsv` with one row per solution. `#` comment lines become the `secao` column, and numpy-wrapped multi-line routes are handled.
+  - It recomputes everything from the final route. It prints a per-group summary and saves it to `<file>_summary.txt` (override with `--summary`). It writes `<file>_checked.tsv` with one row per solution, including `origem` and a `roteiro` column with place names. It writes `<file>_roteiros.txt` with the best feasible itinerary per group, readable, with names (`operations/itinerary.cpp`). `#` comment lines become the `secao` column, and numpy-wrapped multi-line routes are handled.
   - Rule definitions chosen with the user:
     - Category: at most `category` **consecutive** places of the same category per day, as in the paper. The authors' code counts the daily total instead.
     - No repeated place in the **whole trip**.
     - At most `amount_daily_places` places per day, hotel excluded.
     - Distance includes the walk back to the hotel.
     - Tolerance 1e-6.
+  - **Data caveat:** 45 places in `RJ.csv` are named "...: FECHADO" or "... - FECHADO" (closed on TripAdvisor), mostly restaurants. All algorithms, the authors' included, may pick them: 1393 of 3000 v3 solutions do. Filtering them would change the problem, so it needs the user's explicit decision under the comparability rule.
   - About 25% of the authors' final GRASP solutions are infeasible. Almost all violate distance; the cause is local-search bugs. All Greedy solutions are feasible.
   - `GRASP_v1` is 100% feasible. With default params and seed 1, its mean fitness beats the authors' feasible-only mean in all 18 groups (about +0.6). It still loses to Greedy when budget ≥ 1000 and distance is 20 km.
   - `GRASP_v2` is 100% feasible, including a 10,800-solution stress test.

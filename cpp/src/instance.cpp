@@ -67,6 +67,28 @@ PlacesParameters read_instance(const std::string& directory) {
                                  "(rode de novo: python scripts/export_instance.py)");
     }
 
+    // names.tsv: id, name, type (opcional, só para exibir roteiros)
+    if (std::ifstream names_file(directory + "/names.tsv"); names_file) {
+        std::getline(names_file, line); // cabeçalho
+        while (std::getline(names_file, line)) {
+            if (line.empty()) continue;
+            std::istringstream fields(line);
+            std::string id, name, type;
+            std::getline(fields, id, '\t');
+            std::getline(fields, name, '\t');
+            std::getline(fields, type, '\t');
+            if (std::stoul(id) != places.names.size()) {
+                throw std::runtime_error("names.tsv fora de ordem no ID " + id);
+            }
+            places.names.push_back(name);
+            places.types.push_back(type);
+        }
+        if (places.names.size() != places.size) {
+            throw std::runtime_error("names.tsv não corresponde a places.tsv "
+                                     "(rode de novo: python scripts/export_instance.py)");
+        }
+    }
+
     // distance_matrix.bin: n x n float64 little-endian
     std::ifstream matrix_file = open_file(directory + "/distance_matrix.bin", std::ios::binary);
     places.distance_data.resize(places.size * places.size);

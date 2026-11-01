@@ -12,6 +12,7 @@ Arquivos gerados na pasta de saída:
     hotels.txt            IDs de places_parameters["hotels"], na mesma ordem
     places_available.txt  IDs de places_parameters["places_available"], na mesma ordem
     greedy_order.txt      ordem em que o Greedy percorre os locais (por nota, decrescente)
+    names.tsv             id, nome e tipo original do local (ex.: "Praias"), para mostrar os roteiros
     distance_matrix.bin   matriz n x n em float64 little-endian, linha a linha
 
 Os floats de places.tsv são escritos com repr(), que o C++ lê de volta sem perda.
@@ -22,6 +23,7 @@ import os
 import sys
 
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
@@ -29,7 +31,7 @@ import main  # noqa: E402
 import opt_call  # noqa: E402
 
 
-def export(places_parameters, out_dir):
+def export(places_parameters, out_dir, city):
 
     os.makedirs(out_dir, exist_ok=True)
 
@@ -74,6 +76,26 @@ def export(places_parameters, out_dir):
         with open(os.path.join(out_dir, name + ".txt"), "w") as file:
             file.write("".join(f"{int(value)}\n" for value in values))
 
+    # Nome e tipo original de cada local, só para exibição (não entram nas
+    # heurísticas). O main.py reduz a categoria do CSV a hotel/restaurant/
+    # attraction; o tipo original (ex.: "Museus de arte") vem direto do CSV.
+    df_wr = places_parameters["df"].drop_duplicates(subset=["Name"]).set_index("Name").sort_index()
+    csv = pd.read_table(os.path.join("Input", city + ".csv"), sep=";")
+    csv.columns = csv.columns.str.title()
+    original_type = csv.drop_duplicates(subset=["Local Url"]).set_index("Local Url")["Category"]
+
+    def clean(text):
+        return " ".join(str(text).split())  # sem tab nem quebra de linha
+
+    with open(os.path.join(out_dir, "names.tsv"), "w", encoding="utf-8") as file:
+        file.write("id\tname\ttype\n")
+        for place in range(n):
+            row = df_wr.loc[place]
+            kind = original_type.get(row["Local Url"])
+            if pd.isna(kind) or row["General Category"] != "attraction":
+                kind = ""  # só atrações têm um tipo útil para mostrar
+            file.write(f"{place}\t{clean(row['Original Name'])}\t{clean(kind)}\n")
+
     np.ascontiguousarray(distance_matrix, dtype="<f8").tofile(
         os.path.join(out_dir, "distance_matrix.bin")
     )
@@ -95,4 +117,4 @@ if __name__ == "__main__":
 
     places_parameters = opt_call.build_places_parameters(df, distance_matrix)
 
-    export(places_parameters, args.out or os.path.join("Input", args.city + "_instance"))
+    export(places_parameters, args.out or os.path.join("Input", args.city + "_instance"), args.city)
