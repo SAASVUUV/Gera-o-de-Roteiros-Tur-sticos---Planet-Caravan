@@ -30,7 +30,13 @@ Research code (see `Paper.pdf`) that builds multi-day tourist itineraries for Ri
 The authors' GRASP in C++. The user is improving it **one versioned fix at a time**, to measure each change in isolation. `cpp/README.md` (in Portuguese) has the version table and the bug list. In the code, fixed bugs are marked `// CORRIGIDO:` and the ones still kept are marked `// ORIGINAL:`.
 - **Versions.** The user chose to fix the translation in place, not to keep it alongside.
   - The **literal translation** lives in commit `70eb95a` and was **bit-exact with Python**. With `--seed 1` it reproduced all 1800 GRASP rows of `My Results/results.txt`, columns other than time. `numpy_compat` provides this: numpy's legacy MT19937 RNG, masked `randint`, `random_sample`, `choice` with or without `p`, pairwise `np.sum` and `str(np.array)`.
-  - The **current version is `GRASP_v1`**. It fixes the local-search feasibility: the real position, an exact day distance via `day_route_distance` including the hotel return, and budget/distance updates. Its routes therefore differ from Python's.
+  - **`GRASP_v1`** (commit `c09da9d`) fixes the local-search feasibility: the real position, an exact day distance via `day_route_distance` including the hotel return, and budget/distance updates. Its routes therefore differ from Python's.
+  - The **current version is `GRASP_v2`**. Its local search ranks the candidates with `order_candidates` and tries them in order until one fits.
+    - **Δ** = d(A→N) + d(N→C) − d(A→P) − d(P→C), where C is the hotel for the last place of the day.
+    - **Group Δ ≤ 0** comes first, highest rating gain first. The plain Δ/gain ratio would favor small gains when Δ is negative.
+    - **Group Δ > 0** follows, lowest Δ/gain first.
+    - It draws no random numbers; remaining ties go to the lowest ID.
+    - The user considered keeping distance slack, the ratio, for later swaps. Simulations showed the slack buys few extra swaps in a single pass. Revisit this if an insertion move or multi-pass local search is added.
   - Each version must write a distinct algorithm label (`GRASP_NAME` in `heuristics/grasp.hpp`) and a distinct default output file, so earlier results are never overwritten. The user asked for this explicitly.
   - Keep `-ffp-contract=off` and preserve the order of floating-point operations and random draws in code that isn't being changed. This keeps each version's effect attributable to its change.
 - **Comparability rule (user decision).** New versions may change *how* the problem is solved, but never the problem rules, because the user compares against the authors' results.
@@ -40,7 +46,7 @@ The authors' GRASP in C++. The user is improving it **one versioned fix at a tim
 - **Data.** `scripts/export_instance.py` runs `main.prepare_data` and `opt_call.build_places_parameters`, which were extracted from the old inline code without changing their logic. It writes `Input/RJ_instance/`: `places.tsv`, `hotels.txt`, `places_available.txt` and `distance_matrix.bin` (float64, row-major). The folder is gitignored. Re-export whenever `RJ.csv` or the matrix changes.
 - **Build and run** from the repo root:
   - `make -C cpp` builds one executable per file in `cpp/src/apps/` into `cpp/build/` (gitignored). The rest of `cpp/src/` is shared code. New programs, such as the user's own GRASP, go in `apps/`.
-  - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_grasp_v1.txt`. Before each algorithm-parameter group it writes a `# GRASP_v1 max_iterations=N` line (Python doesn't). `results_cpp.txt` holds the literal translation's output; don't append to it.
+  - `cpp/build/grasp [--output F] [--instance D] [--seed N]` reads `Parameters/*.json` and appends to `Results Analysis/My Results/results_grasp_v2.txt`. Before each algorithm-parameter group it writes a `# GRASP_<version> max_iterations=N` line (Python doesn't). Each older version's file (`results_cpp.txt` for the literal translation, `results_grasp_v1.txt`, …) holds that version's output; never append to it.
   - It is about 15× faster than Python.
 - **Verifying a new version:**
   - Run `check_results` on its output. It must stay 100% feasible.
@@ -56,6 +62,10 @@ The authors' GRASP in C++. The user is improving it **one versioned fix at a tim
     - Tolerance 1e-6.
   - About 25% of the authors' final GRASP solutions are infeasible. Almost all violate distance; the cause is local-search bugs. All Greedy solutions are feasible.
   - `GRASP_v1` is 100% feasible. With default params and seed 1, its mean fitness beats the authors' feasible-only mean in all 18 groups (about +0.6). It still loses to Greedy when budget ≥ 1000 and distance is 20 km.
+  - `GRASP_v2` is 100% feasible, including a 10,800-solution stress test.
+    - It beats v1 in all 18 groups, +1.2 on average, reaching 44.6–45.0 at 100 iterations.
+    - It ties or beats Greedy in 12 of 18 groups. It is just below where Greedy hits 45 (budget ≥ 1000, 20 km).
+    - It is about 1.4× slower per execution than v1.
 
 ## Architecture
 

@@ -1,9 +1,9 @@
-// Equivalente a src/main.py + src/opt_call.py, só para o GRASP (versão GRASP_v1).
+// Equivalente a src/main.py + src/opt_call.py, só para o GRASP (versão em GRASP_NAME, heuristics/grasp.hpp).
 //
 // Rode a partir da raiz do repositório (os caminhos são relativos a ela):
 //
 //     cpp/build/grasp [--instance Input/RJ_instance]
-//                     [--output "Results Analysis/My Results/results_grasp_v1.txt"]
+//                     [--output "Results Analysis/My Results/results_grasp_v2.txt"]
 //                     [--seed 1]
 //
 // Lê Parameters/user.json, algorithm.json e experiments.json e, como o Python,
@@ -29,7 +29,7 @@ namespace {
 
 struct Options {
     std::string instance = "Input/RJ_instance";
-    std::string output = "Results Analysis/My Results/results_grasp_v1.txt";
+    std::string output = "Results Analysis/My Results/results_grasp_v2.txt";
     uint32_t seed = 1;
 };
 

@@ -59,10 +59,58 @@ bool verify_local_search_changes(RouteParameters& route_parameters,
     return true;
 }
 
+std::vector<int> order_candidates(const std::vector<int>& candidates, int place, int before, int after,
+                                  const PlacesParameters& places_parameters) {
+    // Δdistância(N) = d(A→N) + d(N→C) − d(A→P) − d(P→C)
+    //   A = local anterior a P, C = próximo (ou o hotel, se P é o último do dia)
+    // ganho(N) = nota(N) − nota(P), sempre > 0
+    //
+    // Grupo 1 (Δ <= 0, a troca não aumenta o dia): maior ganho primeiro;
+    //   empate: o que mais economiza distância. Aqui a distância não limita,
+    //   então o que importa é o fitness. (A razão Δ/ganho colocaria os de
+    //   menor ganho na frente, porque Δ é negativo.)
+    // Grupo 2 (Δ > 0): menor Δ/ganho primeiro, ou seja, quem anda menos
+    //   por ponto de nota ganho.
+    // Empates restantes: menor ID (candidates já vem ordenado), sem sorteio.
+    struct Candidate {
+        int place;
+        double delta;
+        double gain;
+    };
+
+    const double removed = places_parameters.distance(before, place) + places_parameters.distance(place, after);
+    const double rating = places_parameters.rating[static_cast<size_t>(place)];
+
+    std::vector<Candidate> group_1, group_2;
+    for (int candidate : candidates) {
+        const double delta = places_parameters.distance(before, candidate) +
+                             places_parameters.distance(candidate, after) - removed;
+        const double gain = places_parameters.rating[static_cast<size_t>(candidate)] - rating;
+        (delta <= 0 ? group_1 : group_2).push_back({candidate, delta, gain});
+    }
+
+    std::stable_sort(group_1.begin(), group_1.end(), [](const Candidate& a, const Candidate& b) {
+        if (a.gain != b.gain) return a.gain > b.gain;
+        return a.delta < b.delta;
+    });
+    std::stable_sort(group_2.begin(), group_2.end(), [](const Candidate& a, const Candidate& b) {
+        return a.delta / a.gain < b.delta / b.gain;
+    });
+
+    std::vector<int> ordered;
+    ordered.reserve(candidates.size());
+    for (const Candidate& candidate : group_1) ordered.push_back(candidate.place);
+    for (const Candidate& candidate : group_2) ordered.push_back(candidate.place);
+    return ordered;
+}
+
 std::pair<RouteParameters, double> local_search(RouteParameters route_parameters,
                                                 const UsersParameters& users_parameters,
                                                 const PlacesParameters& places_parameters,
-                                                numpy_compat::RandomState& random) {
+                                                [[maybe_unused]] numpy_compat::RandomState& random) {
+    // GRASP_v2: a busca local não sorteia mais nada (a v1 sorteava entre
+    // candidatos empatados). O gerador continua no parâmetro para manter a
+    // interface.
 
     const std::vector<Category>& categories = places_parameters.category;
 
@@ -94,8 +142,7 @@ std::pair<RouteParameters, double> local_search(RouteParameters route_parameters
             if (ratings[static_cast<size_t>(place)] != 5) {
 
                 // então há espaço de melhoria
-                // quais são os locais mais próximos do local atual
-                // que possuem mesma categoria, e possuem uma boa nota
+                // candidatos: mesma categoria e nota maior que a do local atual
 
                 std::vector<int> places_available;
                 for (int poi : pois) {
@@ -105,52 +152,43 @@ std::pair<RouteParameters, double> local_search(RouteParameters route_parameters
                     }
                 }
 
-                std::vector<double> visit_gain;
-                visit_gain.reserve(places_available.size());
-                for (int poi : places_available) {
-                    visit_gain.push_back(places_parameters.distance(place, poi) / ratings[static_cast<size_t>(poi)]);
-                }
-
                 if (!places_available.empty()) {
 
-                    const double min_gain = *std::min_element(visit_gain.begin(), visit_gain.end());
+                    // GRASP_v2: os candidatos são ordenados pelo efeito da troca no
+                    // trajeto, e testados em ordem até um caber (antes: só o mais
+                    // próximo de P era testado). Ver order_candidates.
+                    const long position = index + 1;
+                    const int before = day_route[static_cast<size_t>(position - 1)];
+                    const int after = position + 1 < static_cast<long>(day_route.size())
+                                          ? day_route[static_cast<size_t>(position + 1)]
+                                          : day_route[0]; // último local do dia: volta ao hotel
 
-                    std::vector<int> places;
-                    for (size_t i = 0; i < places_available.size(); ++i) {
-                        if (visit_gain[i] == min_gain) {
-                            places.push_back(places_available[i]);
-                        }
-                    }
+                    const std::vector<int> ordered =
+                        order_candidates(places_available, place, before, after, places_parameters);
 
                     // aqui temos que verificar a viabilidade dessa rota
+                    for (int new_place : ordered) {
 
-                    std::vector<size_t> indices;
-                    for (size_t i = 0; i < route.size(); ++i) {
-                        if (route[i] == day_route[static_cast<size_t>(index + 1)]) {
-                            indices.push_back(i);
+                        // CORRIGIDO: passa a posição real do local (index + 1), e não index
+                        const bool respect_constraints = verify_local_search_changes(
+                            route_parameters, users_parameters, places_parameters, place, new_place, position, day);
+
+                        // não respeita as restrições: tenta o próximo candidato
+                        if (!respect_constraints) {
+
+                            continue;
                         }
+
+                        for (int& visited : route) {
+                            if (visited == place) {
+                                visited = new_place;
+                            }
+                        }
+
+                        day_route[static_cast<size_t>(position)] = new_place;
+
+                        break;
                     }
-
-                    const int new_place = random.choice(places);
-
-                    // CORRIGIDO: passa a posição real do local (index + 1), e não index
-                    const bool respect_constraints =
-                        verify_local_search_changes(route_parameters, users_parameters, places_parameters,
-                                                    place, new_place, index + 1, day);
-
-                    // não respeita as restrições
-                    if (!respect_constraints) {
-
-                        continue;
-                    }
-
-                    for (size_t i : indices) {
-                        route[i] = new_place;
-                    }
-
-                    // tenho que garantir que nota rota é válida
-                    // checagem de restrições
-                    day_route[static_cast<size_t>(index + 1)] = new_place;
                 }
             }
         }
