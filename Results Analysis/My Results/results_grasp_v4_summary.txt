@@ -1,0 +1,34 @@
+Resumo de viabilidade de: Results Analysis/My Results/results_grasp_v4.txt
+Gerado em: 2026-11-02 12:15 por cpp/build/check_results
+Dados: Input/RJ_instance
+Restrições: amount_days=2, amount_daily_places=5, category=3 (seguidos)
+
+secao                        budget  dist          n  viaveis   fit.todas fit.viaveis melhor.viav do_grasp  violacoes
+GRASP_v4 max_iterations=10   500     10000       100     100%       43.61       43.61       45.00     100%  
+GRASP_v4 max_iterations=10   500     20000       100     100%       44.07       44.07       45.00     100%  
+GRASP_v4 max_iterations=10   1000    10000       100     100%       43.99       43.99       45.00      88%  
+GRASP_v4 max_iterations=10   1000    20000       100     100%       45.00       45.00       45.00      15%  
+GRASP_v4 max_iterations=10   2500    10000       100     100%       44.20       44.20       45.00      99%  
+GRASP_v4 max_iterations=10   2500    20000       100     100%       45.00       45.00       45.00      25%  
+GRASP_v4 max_iterations=50   500     10000       100     100%       44.41       44.41       45.00     100%  
+GRASP_v4 max_iterations=50   500     20000       100     100%       44.65       44.65       45.00     100%  
+GRASP_v4 max_iterations=50   1000    10000       100     100%       44.59       44.59       45.00     100%  
+GRASP_v4 max_iterations=50   1000    20000       100     100%       45.00       45.00       45.00      64%  
+GRASP_v4 max_iterations=50   2500    10000       100     100%       44.70       44.70       45.00     100%  
+GRASP_v4 max_iterations=50   2500    20000       100     100%       45.00       45.00       45.00      81%  
+GRASP_v4 max_iterations=100  500     10000       100     100%       44.60       44.60       45.00     100%  
+GRASP_v4 max_iterations=100  500     20000       100     100%       44.81       44.81       45.00     100%  
+GRASP_v4 max_iterations=100  1000    10000       100     100%       44.73       44.73       45.00     100%  
+GRASP_v4 max_iterations=100  1000    20000       100     100%       45.00       45.00       45.00      76%  
+GRASP_v4 max_iterations=100  2500    10000       100     100%       44.85       44.85       45.00     100%  
+GRASP_v4 max_iterations=100  2500    20000       100     100%       45.00       45.00       45.00      97%  
+
+Total: 1800 de 1800 soluções viáveis (100.0%)
+
+Colunas: n = soluções no grupo; viaveis = % que respeitam todas as restrições;
+fit.todas / fit.viaveis = fitness médio de todas / só das viáveis; melhor.viav = maior
+fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.
+do_grasp = % das soluções finais que vieram de uma iteração do GRASP (que alcançou ou
+superou o Greedy); o resto é a semente gulosa, que nenhuma iteração alcançou.
+Regras: orçamento = hotel x dias + locais; distância de cada dia inclui a volta ao
+hotel; categoria = locais seguidos da mesma categoria; nenhum local se repete na viagem.

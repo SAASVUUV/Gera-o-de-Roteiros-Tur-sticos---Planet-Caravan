@@ -6,8 +6,9 @@
 //     commit c09da9d
 //   - GRASP_v2: a busca local ordena os candidatos pelo efeito no trajeto e
 //     testa em ordem até um caber (ver order_candidates), commit 32fdc39
-//   - GRASP_v3 (esta): o roteiro do Greedy é a solução inicial (semente); uma
+//   - GRASP_v3: o roteiro do Greedy é a solução inicial (semente); uma
 //     solução do GRASP só o substitui se tiver fitness >= ao dele
+//   - GRASP_v4 (esta): α reativo com a fórmula de maximização (ver select_alpha)
 // Os comportamentos originais que continuam iguais estão marcados com "ORIGINAL:".
 
 #pragma once
@@ -22,7 +23,11 @@
 
 // Nome do algoritmo na coluna "algorithm" dos resultados. É diferente de
 // "GRASP" para não misturar com os resultados dos autores.
-inline constexpr const char* GRASP_NAME = "GRASP_v3";
+inline constexpr const char* GRASP_NAME = "GRASP_v4";
+
+// Amplificação δ do α reativo (GRASP_v4): q_i = (A_i / z*)^δ. Quanto maior,
+// mais o α de melhor média é favorecido; 10 é o valor de Prais & Ribeiro (2000).
+inline constexpr double REACTIVE_AMPLIFICATION = 10.0;
 
 // Um item do dict alphas = {0.3: {"results": [...]}, 0.4: ..., 0.7: ...}
 struct AlphaResults {
@@ -48,7 +53,9 @@ std::pair<RouteParameters, double> local_search(RouteParameters route_parameters
                                                 const PlacesParameters& places_parameters,
                                                 numpy_compat::RandomState& random);
 
-std::vector<double> inverse_probability(const std::vector<double>& probabilities);
+// Probabilidade de cada alpha: p_i = q_i / soma(q), com q_i = (A_i / z*)^δ,
+// A_i = média do fitness das soluções feitas com o alpha i e z* = fitness.
+std::vector<double> alpha_probabilities(double fitness, const std::vector<AlphaResults>& alphas);
 
 // Devolve a posição do alpha sorteado em alphas
 size_t select_alpha(double fitness, const std::vector<AlphaResults>& alphas,
