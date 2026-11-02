@@ -7,7 +7,8 @@ GRASP dos autores (`src/heuristics/grasp.py` e o que ele usa) traduzido para C++
 | tradução literal | nada: idêntica ao Python, inclusive os bugs | commit `70eb95a` | `results_cpp.txt` (coluna `GRASP`) |
 | `GRASP_v1` | busca local corrigida: nunca viola orçamento nem distância | commit `c09da9d` | `results_grasp_v1.txt` (coluna `GRASP_v1`) |
 | `GRASP_v2` | busca local testa os candidatos em ordem, pelo efeito no trajeto, até um caber | commit `32fdc39` | `results_grasp_v2.txt` (coluna `GRASP_v2`) |
-| `GRASP_v3` (atual) | o roteiro do Greedy é a solução inicial; o GRASP só o substitui com fitness ≥ | código atual | `results_grasp_v3.txt` (coluna `GRASP_v3`, 7ª coluna com a origem) |
+| `GRASP_v3` | o roteiro do Greedy é a solução inicial; o GRASP só o substitui com fitness ≥ | commit `aede8fa` | `results_grasp_v3.txt` (coluna `GRASP_v3`, 7ª coluna com a origem) |
+| `GRASP_v4` (atual) | α reativo com a fórmula de maximização (Prais & Ribeiro), δ = 10 | código atual | `results_grasp_v4.txt` (coluna `GRASP_v4`, 7ª coluna com a origem) |
 
 O C++ reproduz o gerador aleatório do numpy. A tradução literal, com a semente 1, gera exatamente as mesmas 1800 linhas GRASP de `Results Analysis/My Results/results.txt`. A partir da `GRASP_v1`, as rotas mudam porque a busca local aceita e recusa trocas diferentes. Para ver uma versão anterior: `git show <commit>:cpp/src/heuristics/grasp.cpp`.
 
@@ -48,6 +49,21 @@ A v1 testava só o candidato mais próximo de P e desistia se ele não coubesse.
 - **`do_grasp`**: 100% em quase todos os grupos. Onde o Greedy faz 45, o GRASP sozinho chega lá em 14–22% das execuções com 10 iterações, 61–77% com 50 e 81–95% com 100.
 - **100% viável**, inclusive no teste de estresse (10.800 soluções).
 
+### Resultado da GRASP_v4 (parâmetros padrão, semente 1)
+
+**O que mudou.** Só a escolha do α, em `alpha_probabilities`. No original, `q_i = z*/A_i` é a fórmula do Talbi para **minimização** e favorece o α de pior média. A "probabilidade inversa" que vinha depois, `(1 − p_i)/(n − 1)`, invertia a direção mas deixava os 5 α entre ~19,9% e ~20,1%, ou seja, quase um sorteio uniforme. A v4 usa a fórmula do reactive GRASP para maximização (Prais & Ribeiro, 2000):
+
+`q_i = (A_i / z*)^δ`,  `p_i = q_i / Σ q_j`,  com δ = 10 (`REACTIVE_AMPLIFICATION` em `heuristics/grasp.hpp`)
+
+Exemplo com médias 43, 44 e 45: o original dava 32,9% / 33,3% / 33,7%, e a v4 dá 26% / 33% / 41%. O sorteio continua usando um único número aleatório, como antes.
+
+**Resultados:**
+
+- **Nenhuma diferença significativa em relação à v3.** As diferenças de média ficam entre −0,07 e +0,06, e o |t| de Welch é menor que 1,4 em todos os 18 grupos. Tempo igual (~35 ms por execução).
+- **100% viável** (1800 de 1800).
+- **Por quê: nesta instância o α quase não importa.** Com α **fixo** em 0,1 / 0,3 / 0,5 / 0,7 / 0,9 (o mesmo valor em todas as iterações), o fitness médio de cada grupo fica dentro do ruído (ex.: 500/10 km com 100 iterações: 44,56 / 44,59 / 44,56 / 44,55 / 44,58; desvio-padrão ≈ 0,5). Se todos os α são igualmente bons, nenhuma regra de escolha consegue ganhar. Testamos também δ = 1, 30 e 100, sem diferença.
+- A v4 fica como a versão **correta** do α reativo, e o resultado negativo fica registrado: o α reativo do artigo não contribui para a qualidade nesta instância.
+
 O Greedy em C++ também pode ser rodado sozinho com `cpp/build/greedy`. Ele reproduz exatamente as 600 linhas Greedy de `results.txt`.
 
 ## Como usar
@@ -79,7 +95,7 @@ make -C cpp
 
 O comando gera um executável em `cpp/build/` para cada arquivo de `cpp/src/apps/`:
 
-- `grasp`: o GRASP (versão atual, `GRASP_v3`).
+- `grasp`: o GRASP (versão atual, `GRASP_v4`).
 - `greedy`: o Greedy dos autores (tradução literal), grava em `results_greedy_cpp.txt`.
 - `check_results`: o verificador de viabilidade.
 
@@ -91,7 +107,7 @@ Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `
 cpp/build/grasp
 ```
 
-O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_grasp_v3.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v3` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v3 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
+O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_grasp_v4.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v4` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v4 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
 
 Uma versão nova deve trocar `GRASP_NAME` em `heuristics/grasp.hpp` e o arquivo padrão em `apps/grasp.cpp`. Assim os resultados de cada versão ficam separados.
 
@@ -99,7 +115,7 @@ Opções:
 
 | Opção | Padrão | |
 |---|---|---|
-| `--output ARQUIVO` | `Results Analysis/My Results/results_grasp_v3.txt` | arquivo de saída (só acrescenta) |
+| `--output ARQUIVO` | `Results Analysis/My Results/results_grasp_v4.txt` | arquivo de saída (só acrescenta) |
 | `--instance PASTA` | `Input/RJ_instance` | dados exportados |
 | `--seed N` | `1` | semente; 1 é a do `main.py` |
 
@@ -191,7 +207,7 @@ Os que continuam no código estão marcados com `// ORIGINAL:`; os já corrigido
    - O filtro de preço é estrito (`<`), mas `verify_constructive_heuristic_constraints` usa `>`.
    - A distância diária guardada (`daily_distance`) não inclui a volta ao hotel.
 4. **[MANTIDO de propósito, para comparar com os autores] Cada dia tem no máximo `amount_daily_places - 1` locais.** O dia é fechado quando `len(route) >= amount_daily_places`, e `route` inclui o hotel. Com `amount_daily_places = 5`, são 4 locais por dia.
-5. **`select_alpha` usa o fitness da iteração atual, e não o melhor.** O alpha sorteado só vale para a próxima iteração.
+5. **[CORRIGIDO na GRASP_v4] O α reativo quase não reagia.** `select_alpha` usava a fórmula de minimização do Talbi seguida de uma "probabilidade inversa" que deixava todos os α perto de 20%. A v4 usa `q_i = (A_i / z*)^δ`. Continuam como no original: o fitness usado é o da iteração atual, e não o melhor (com a fórmula nova ele se cancela na normalização), e o alpha sorteado só vale para a próxima iteração.
 6. **[PARCIALMENTE MELHORADO na GRASP_v2] A busca local só troca um local por outro da mesma categoria e com nota maior.** No original, ela escolhia o de menor `distância/nota` a partir do local atual, sorteando em caso de empate, e desistia se ele não coubesse. Na v2, os candidatos são ordenados pelo efeito no trajeto e testados até um caber. Continua sendo uma única passada e não acrescenta locais (não há movimento de inserção).
 7. **`before_ls` é calculado e nunca usado.** Foi omitido no C++; ele não consome números aleatórios, então o resultado não muda.
 8. **`generate_daily_array_route` só concatena as rotas.** O `np.array(route, route[0])` apenas copia o array. A saída é a concatenação das rotas de cada dia, com o hotel no início de cada dia.

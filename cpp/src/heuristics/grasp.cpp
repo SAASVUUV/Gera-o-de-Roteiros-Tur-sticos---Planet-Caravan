@@ -3,6 +3,7 @@
 #include "grasp.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <optional>
 #include <stdexcept>
 #include <tuple>
@@ -202,60 +203,38 @@ std::pair<RouteParameters, double> local_search(RouteParameters route_parameters
     return {std::move(route_parameters), fitness};
 }
 
-std::vector<double> inverse_probability(const std::vector<double>& probabilities) {
-
-    // Passo 2: Subtrair cada probabilidade da soma total
-    std::vector<double> inverse_proba;
-    for (double p : probabilities) {
-        inverse_proba.push_back(numpy_compat::sum(probabilities) - p);
+std::vector<double> alpha_probabilities(double fitness, const std::vector<AlphaResults>& alphas) {
+    // CORRIGIDO (GRASP_v4). No original, q_i = z*/A_i (a fórmula do Talbi para
+    // MINIMIZAÇÃO), o que favorece o alpha de pior média. Para inverter, o
+    // código fazia p'_i = (1 - p_i) / (n - 1), que deixa todos os alphas perto
+    // de 1/n (com 5 alphas, entre ~19,9% e ~20,1%): na prática não reagia.
+    //
+    // Agora: fórmula do reactive GRASP para maximização (Prais & Ribeiro, 2000):
+    //   q_i = (A_i / z*)^δ,  p_i = q_i / soma(q)
+    // z* se cancela na normalização; fica só para manter a forma da literatura.
+    std::vector<double> q;
+    for (const AlphaResults& alpha : alphas) {
+        q.push_back(std::pow(numpy_compat::mean(alpha.results) / fitness, REACTIVE_AMPLIFICATION));
     }
 
-    // Passo 3: Normalizar as probabilidades
-    std::vector<double> normalized;
-    for (double p : inverse_proba) {
-        normalized.push_back(p / numpy_compat::sum(inverse_proba));
+    const double total = numpy_compat::sum(q);
+    std::vector<double> probabilities;
+    for (double value : q) {
+        probabilities.push_back(value / total);
     }
-
-    return normalized;
+    return probabilities;
 }
 
 size_t select_alpha(double fitness, const std::vector<AlphaResults>& alphas,
                     numpy_compat::RandomState& random) {
-    // Implementação de acordo com o livro do Talbi
-    //
-    // z* == fitness
-    // Ai == np.mean(alphas[alpha]) --> media do alpha atual
-    // qj = z*/Ai
-    // qi/ sum Ai
-    // pi = qi/sum qj
-
-    std::vector<double> alpha_mean;
-    for (const AlphaResults& alpha : alphas) {
-        alpha_mean.push_back(numpy_compat::mean(alpha.results));
-    }
-
-    std::vector<double> mean_ai;
-    for (double mean : alpha_mean) {
-        mean_ai.push_back(fitness / mean);
-    }
-
-    // novas probabilidades
-    const double total = numpy_compat::sum(mean_ai);
-    std::vector<double> probability_alpha;
-    for (size_t alpha_index = 0; alpha_index < alphas.size(); ++alpha_index) {
-        probability_alpha.push_back((fitness / alpha_mean[alpha_index]) / total);
-    }
-
-    // dando maior probabilidade para quem o fitness maior
-    // a função feita pelo livro do talbi tem como objetivo a minimização
-    // a função acima tem por objetivo realizar a probabilidade inversa
-    // ou seja, o alpha que antes tinha a menor probabilidade passa a ser maior
+    // Como no original, sorteia um alpha com um único número aleatório, então
+    // a sequência de sorteios das outras etapas não muda.
     std::vector<size_t> keys(alphas.size());
     for (size_t i = 0; i < keys.size(); ++i) {
         keys[i] = i;
     }
 
-    return random.choice(keys, inverse_probability(probability_alpha));
+    return random.choice(keys, alpha_probabilities(fitness, alphas));
 }
 
 std::vector<int> generate_daily_array_route(const UsersParameters& users_parameters,
