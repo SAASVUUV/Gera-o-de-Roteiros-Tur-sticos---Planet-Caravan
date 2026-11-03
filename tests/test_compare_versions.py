@@ -8,8 +8,9 @@ import compare_versions as cv
 
 def checked(rows):
     """rows: (secao, budget, distância, tempo, fitness, viável, origem)."""
-    return pd.DataFrame(rows, columns=["secao", "budget", "total_distance", "time",
-                                       "fitness", "viavel", "origem"])
+    df = pd.DataFrame(rows, columns=["secao", "budget", "total_distance", "time",
+                                     "fitness", "viavel", "origem"])
+    return df.assign(algorithm=df["secao"].str.split().str[0])
 
 
 @pytest.fixture
@@ -23,6 +24,7 @@ def section(tmp_path):
         ("GRASP max_iterations=10", 500, 10000, 1.0, 43.0, 1, "grasp"),
         ("GRASP max_iterations=10", 500, 10000, 1.0, 45.0, 0, "grasp"),  # inviável
         ("GRASP max_iterations=50", 500, 10000, 2.0, 44.0, 1, "grasp"),
+        ("Greedy", 500, 10000, 0.5, 30.0, 1, "greedy"),  # o main.py também roda o Greedy
     ])
     greedy = checked([("Greedy", 500, 10000, 0.01, 41.0, 1, "greedy")])
     for name, df in (("v4", v4), ("python", python), ("greedy", greedy),
@@ -33,6 +35,11 @@ def section(tmp_path):
 
 def test_load_section_orders_versions_and_ignores_unknown(section):
     assert list(cv.load_section(section)) == ["python", "v4", "greedy"]
+
+
+def test_python_section_keeps_only_grasp_rows(section):
+    python = cv.load_section(section)["python"]
+    assert set(python["algorithm"]) == {"GRASP"} and len(python) == 3
 
 
 def test_load_section_empty_folder(tmp_path):

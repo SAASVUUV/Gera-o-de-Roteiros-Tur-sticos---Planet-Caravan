@@ -34,7 +34,10 @@ def load_section(folder):
     for path in glob.glob(os.path.join(folder, "results_*_checked.tsv")):
         version = re.fullmatch(r"results_(.+)_checked\.tsv", os.path.basename(path)).group(1)
         if version in VERSION_ORDER:
-            found[version] = pd.read_table(path)
+            df = pd.read_table(path)
+            if version == "python":  # o main.py roda GRASP e Greedy; o Greedy tem arquivo próprio
+                df = df[df["algorithm"] == "GRASP"]
+            found[version] = df
     if not found:
         raise SystemExit(f"Nenhum results_<versão>_checked.tsv em {folder}")
     return {v: found[v] for v in VERSION_ORDER if v in found}
