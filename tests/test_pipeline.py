@@ -138,3 +138,38 @@ def test_main_accepts_city_argument():
     result = subprocess.run([sys.executable, os.path.join(ROOT, "src", "main.py"), "--help"],
                             capture_output=True, text=True, cwd=ROOT)
     assert result.returncode == 0 and "--city" in result.stdout
+
+
+# --- o Rio não pode mudar ------------------------------------------------------
+
+
+@pytest.mark.slow
+def test_rio_instance_export_unchanged(tmp_path):
+    reference = os.path.join(ROOT, "Input", "RJ_instance")
+    if not os.path.isdir(reference):
+        pytest.skip("Input/RJ_instance não exportada")
+    out = tmp_path / "RJ_instance"
+    run([sys.executable, os.path.join(ROOT, "scripts", "export_instance.py"),
+         "--city", "RJ", "--out", str(out)], ROOT)
+    for name in sorted(os.listdir(reference)):
+        with open(os.path.join(reference, name), "rb") as a, open(out / name, "rb") as b:
+            assert a.read() == b.read(), name
+
+
+@pytest.mark.slow
+def test_rio_grasp_v4_reproduces_first_rows(cpp_build, tmp_path):
+    reference = os.path.join(ROOT, "Results Analysis", "My Results", "results_grasp_v4.txt")
+    (tmp_path / "Parameters").mkdir()
+    for name in ("user.json", "algorithm.json"):
+        shutil.copy(os.path.join(ROOT, "Parameters", name), tmp_path / "Parameters" / name)
+    (tmp_path / "Parameters" / "experiments.json").write_text('{"amount_executions": 3}')
+    output = tmp_path / "out.txt"
+    run([os.path.join(cpp_build, "grasp"), "--instance", os.path.join(ROOT, "Input", "RJ_instance"),
+         "--output", str(output), "--seed", "1"], tmp_path)
+
+    def rows(path, count):  # sem a coluna de tempo (4ª)
+        with open(path) as file:
+            lines = [line.rstrip("\n").split("\t") for line in file if not line.startswith("#")]
+        return [line[:3] + line[4:] for line in lines[:count]]
+
+    assert rows(output, 3) == rows(reference, 3)
