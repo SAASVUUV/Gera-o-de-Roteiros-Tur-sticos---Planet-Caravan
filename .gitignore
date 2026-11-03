@@ -166,3 +166,9 @@ cache/
 # Versão C++ (cpp/): binários e dados exportados por scripts/export_instance.py
 cpp/build/
 Input/*_instance/
+
+# Yelp Open Dataset: uso acadêmico, proibido compartilhar (Dataset User Agreement).
+# Nada derivado dele entra no repositório público.
+Input/yelp/
+Input/NOLA*
+Results Analysis/My Results/NOLA/

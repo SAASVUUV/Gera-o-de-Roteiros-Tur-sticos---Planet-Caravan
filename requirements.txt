@@ -7,3 +7,6 @@ tqdm
 matplotlib
 scipy
 jupyter
+
+# Testes (tests/)
+pytest
