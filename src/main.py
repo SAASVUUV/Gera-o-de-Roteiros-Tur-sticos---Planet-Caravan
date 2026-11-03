@@ -152,9 +152,13 @@ def prepare_data(city):
 
 if __name__ == "__main__":
 
-    np.random.seed(1)
+    import argparse
 
-    city = "RJ"
+    parser = argparse.ArgumentParser(description="Roda os experimentos (Greedy e GRASP).")
+    parser.add_argument("--city", default="RJ", help="lê Input/<city>.csv e a matriz")
+    city = parser.parse_args().city
+
+    np.random.seed(1)
 
     df, distance_matrix = prepare_data(city)
 
