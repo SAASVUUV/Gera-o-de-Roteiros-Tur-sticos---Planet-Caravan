@@ -75,3 +75,40 @@ def test_report_contains_all_sections(section):
     # tabela do fitness: grupo de 10 iterações, Python 43.00, v4 43.00, Greedy 41.00
     assert "| 10 | 500 | 10000 | 43.00 | 43.00 | 41.00 |" in text
     assert "| NOLA | Python (autores) | 3 | 66.7% | 43.50 |" in text
+
+
+def test_infer_iterations_by_position():
+    df = checked([("", 500, 1, 0.1, f, 1, "grasp") for f in (1, 2, 3, 4, 5, 6)])
+    df["algorithm"] = "GRASP"
+    out = cv.infer_iterations(df, [10, 50, 100])
+    assert list(out["secao"].map(cv.iterations_of)) == [10, 10, 50, 50, 100, 100]
+
+
+def test_infer_iterations_rejects_uneven_blocks():
+    df = checked([("", 500, 1, 0.1, 1.0, 1, "grasp")] * 4).assign(algorithm="GRASP")
+    with pytest.raises(SystemExit):
+        cv.infer_iterations(df, [10, 50, 100])
+
+
+def test_literal_without_sections_uses_parameters_order(tmp_path):
+    (tmp_path / "Parameters").mkdir()
+    (tmp_path / "Parameters" / "algorithm.json").write_text('{"GRASP": {"max_iterations": [100, 10]}}')
+    literal = checked([("", 500, 1, 0.1, 40.0, 1, "grasp"), ("", 500, 1, 0.1, 42.0, 1, "grasp")])
+    literal.assign(algorithm="GRASP").to_csv(tmp_path / "results_literal_checked.tsv",
+                                             sep="\t", index=False)
+    stats = cv.group_stats(cv.load_section(tmp_path)["literal"]).set_index("iterations")
+    assert stats.loc[100, "fitness_all"] == 40.0 and stats.loc[10, "fitness_all"] == 42.0
+
+
+def test_iterations_filter(section):
+    v4 = cv.load_section(section, iterations=[50])["v4"]
+    assert list(v4["secao"].map(cv.iterations_of)) == [50]
+    greedy = cv.load_section(section, iterations=[50])["greedy"]
+    assert len(greedy) == 1  # sem iterações: não é filtrado
+
+
+def test_iteration_order_uses_values_common_to_all_versions(tmp_path):
+    def grasp(values):
+        return checked([(f"GRASP_vX max_iterations={v}", 500, 1, 0.1, 40.0, 1, "grasp") for v in values])
+    order = cv.iteration_order(tmp_path, [grasp([10, 50, 100]), grasp([10, 50, 100, 200, 500])])
+    assert order == [10, 50, 100]
