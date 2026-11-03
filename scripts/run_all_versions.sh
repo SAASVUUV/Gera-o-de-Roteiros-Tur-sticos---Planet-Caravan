@@ -23,8 +23,9 @@ declare -A COMMIT=(
   [v1]=c09da9d
   [v2]=32fdc39
   [v3]=aede8fa
-  [v4]=HEAD          # versão atual; também fornece o Greedy e o check_results
+  [v4]=a0c7b78
 )
+# O Greedy (lógica nunca muda) e o check_results vêm do código atual (HEAD).
 VERSIONS="literal v1 v2 v3 v4 greedy"
 
 CITY=""; PROFILE=""; WITH_PYTHON=0; ONLY=""
@@ -70,19 +71,37 @@ elif [ "$PROFILE" != "rio" ]; then
   echo "Perfil desconhecido: $PROFILE (use rio ou local)" >&2; exit 2
 fi
 ln -s "$ROOT/Input" "$RUN/Input"
-cp -r "$RUN/Parameters" "$OUT_DIR/"  # registra com quais parâmetros rodou
+# Registra com quais parâmetros os resultados foram feitos, e não deixa
+# misturar na mesma pasta resultados de parâmetros diferentes.
+if [ -d "$OUT_DIR/Parameters" ]; then
+  if ! diff -r -q "$RUN/Parameters" "$OUT_DIR/Parameters" >/dev/null; then
+    echo "Os parâmetros mudaram desde os resultados que já estão em $OUT_DIR:" >&2
+    diff -r "$OUT_DIR/Parameters" "$RUN/Parameters" >&2 || true
+    echo "Use outra pasta (mova a atual) ou restaure os parâmetros." >&2
+    exit 1
+  fi
+else
+  cp -r "$RUN/Parameters" "$OUT_DIR/"
+fi
 echo "Parâmetros ($PROFILE): $(tr -d ' \n' < "$RUN/Parameters/user.json")"
 
-build() {  # build <commit> -> imprime a pasta cpp/build compilada
+# build <commit>: compila a versão num worktree e põe a pasta cpp/build em
+# $BUILT. Roda no shell atual (não em $(...)), para que o set -e pare o script
+# se o checkout ou a compilação falharem; .built marca uma compilação completa.
+build() {
   local tree="$WORK/tree-$1"
-  if [ ! -d "$tree" ]; then
-    git -C "$ROOT" worktree add --detach "$tree" "$1" >/dev/null 2>&1
+  if [ ! -e "$tree/.built" ]; then
+    rm -rf "$tree"; git -C "$ROOT" worktree prune
+    git -C "$ROOT" worktree add --quiet --detach "$tree" "$1"
     make -s -C "$tree/cpp" >/dev/null
+    touch "$tree/.built"
   fi
-  echo "$tree/cpp/build"
+  BUILT="$tree/cpp/build"
 }
 
-CHECK="$(build HEAD)/check_results"
+build HEAD
+CHECK="$BUILT/check_results"
+GREEDY="$BUILT/greedy"
 
 for version in $VERSIONS; do
   out="$OUT_DIR/results_$version.txt"
@@ -90,16 +109,21 @@ for version in $VERSIONS; do
     echo "== $version: $out já existe, pulando"; continue
   fi
   echo "== $version"
+  # Os programas acrescentam ao arquivo de saída: escreve num .partial e só o
+  # renomeia no fim, para que uma execução interrompida não pareça completa.
+  partial="$out.partial"
+  rm -f "$partial"
   start=$SECONDS
   case "$version" in
-    greedy) (cd "$RUN" && "$(build HEAD)/greedy" --instance "$INSTANCE" --output "$out") ;;
+    greedy) (cd "$RUN" && "$GREEDY" --instance "$INSTANCE" --output "$partial") ;;
     literal|v1|v2|v3|v4)
-      (cd "$RUN" && "$(build "${COMMIT[$version]}")/grasp" \
-        --instance "$INSTANCE" --output "$out" --seed 1) ;;
+      build "${COMMIT[$version]}"
+      (cd "$RUN" && "$BUILT/grasp" --instance "$INSTANCE" --output "$partial" --seed 1) ;;
     *) echo "Versão desconhecida: $version" >&2; exit 2 ;;
   esac
+  mv "$partial" "$out"
   echo "   $((SECONDS - start)) s"
-  (cd "$RUN" && "$CHECK" "$out" --instance "$INSTANCE" | tail -n +1 > /dev/null)
+  (cd "$RUN" && "$CHECK" "$out" --instance "$INSTANCE" > /dev/null)
   echo "   check_results: ${out%.txt}_summary.txt"
 done
 
@@ -110,6 +134,7 @@ if [ "$WITH_PYTHON" = 1 ]; then
   else
     echo "== python (autores)"
     start=$SECONDS
+    rm -f "$RUN/Results Analysis/My Results/results.txt"
     (cd "$RUN" && "$PYTHON" "$ROOT/src/main.py" --city "$CITY")
     mv "$RUN/Results Analysis/My Results/results.txt" "$out"
     echo "   $((SECONDS - start)) s"
