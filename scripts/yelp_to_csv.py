@@ -21,7 +21,13 @@ Regras da conversão:
   - rating: as estrelas do Yelp (já vão de 0,5 em 0,5, como no TripAdvisor).
   - min/max price: a faixa $–$$$$ do Yelp vira o preço de um local "típico"
     daquele quartil de preço no RJ.csv, por categoria. Assim os budgets do Rio
-    continuam fazendo sentido. Sem faixa: a mediana da categoria no Rio.
+    continuam fazendo sentido.
+  - Sem faixa no Yelp (campo opcional): a faixa é estimada pelas categorias do
+    local (ex.: "Fast Food", "Steakhouses"). Cada categoria vale a faixa média
+    dos locais do mesmo tipo que têm faixa, no dataset inteiro; o local recebe
+    a média das suas categorias com pelo menos --min-support exemplos,
+    arredondada. Categorias genéricas ("Restaurants", "Food"...) não contam.
+    Sem nenhuma categoria útil: a mediana da categoria no Rio.
   - review count: número de avaliações (coluna extra, ainda não usada).
 """
 
@@ -49,6 +55,10 @@ ATTRACTION_CATEGORIES = [
     "Walking Tours", "Historical Tours", "Tours", "Cultural Center",
     "Public Markets", "Amusement Parks", "Festivals", "Bars", "Beaches",
 ]
+
+# Dizem pouco sobre o preço: não entram na estimativa da faixa.
+GENERIC_CATEGORIES = {"Restaurants", "Food", "Nightlife", "Event Planning & Services",
+                      "Hotels & Travel"}
 
 # Categorias do RJ.csv que o main.py trata como hotel e restaurante; o resto é atração.
 RJ_HOTEL, RJ_RESTAURANT = "hotels", "restaurant"
@@ -83,6 +93,32 @@ def price_level(business):
     return level if 1 <= level <= 4 else None
 
 
+def category_price_stats(businesses):
+    """{tipo geral: {categoria do Yelp: (soma das faixas, quantidade)}}."""
+    stats = {"hotel": {}, "restaurant": {}, "attraction": {}}
+    for business in businesses:
+        level, kind = price_level(business), classify(business)
+        if level is None or kind is None:
+            continue
+        table = stats[kind[0]]
+        for category in categories_of(business) - GENERIC_CATEGORIES:
+            total, count = table.get(category, (0, 0))
+            table[category] = (total + level, count + 1)
+    return stats
+
+
+def estimate_level(business, kind, stats, min_support=10):
+    """Faixa 1–4 estimada pelas categorias do local, ou None se nenhuma serve."""
+    means = [total / count
+             for category in categories_of(business) - GENERIC_CATEGORIES
+             for total, count in [stats[kind].get(category, (0, 0))]
+             if count >= min_support]
+    if not means:
+        return None
+    # round() do Python arredonda 2.5 para 2; aqui .5 sobe, como no arredondamento usual
+    return int(min(4, max(1, np.floor(np.mean(means) + 0.5))))
+
+
 def price_table(rj):
     """{tipo geral: {nível ou None: (min, max)}} calibrada nos quartis do Rio.
 
@@ -111,12 +147,12 @@ def synthetic_url(kind, business_id):
     return f"/{prefix}_Review-{business_id}-Reviews.html"
 
 
-def read_businesses(path, state):
-    """Locais do estado, lidos linha a linha (o arquivo tem ~150 mil)."""
+def read_businesses(path, state=None):
+    """Locais do estado (ou todos), lidos linha a linha (o arquivo tem ~150 mil)."""
     with open(path, encoding="utf-8") as file:
         for line in file:
             business = json.loads(line)
-            if business.get("state") == state:
+            if state is None or business.get("state") == state:
                 yield business
 
 
@@ -130,7 +166,8 @@ def choose_min_reviews(review_counts, target_size):
     return threshold
 
 
-def convert(businesses, rings, rj, target_size=None, min_reviews=None, tolerance_m=100):
+def convert(businesses, rings, rj, target_size=None, min_reviews=None, tolerance_m=100,
+            level_stats=None, min_support=10):
     """DataFrame no formato do RJ.csv, mais um resumo da conversão (dict)."""
     candidates = []
     for business in businesses:
@@ -158,10 +195,14 @@ def convert(businesses, rings, rj, target_size=None, min_reviews=None, tolerance
     summary["min_reviews"] = min_reviews
 
     prices = price_table(rj)
-    rows, without_price = [], 0
+    rows, without_price, estimated = [], 0, 0
     for business, (kind, shown) in candidates:
         level = price_level(business)
-        without_price += level is None
+        if level is None:
+            without_price += 1
+            if level_stats is not None:
+                level = estimate_level(business, kind, level_stats, min_support)
+                estimated += level is not None
         low, high = prices[kind][level]
         rows.append({
             "local url": synthetic_url(kind, business["business_id"]),
@@ -184,6 +225,7 @@ def convert(businesses, rings, rj, target_size=None, min_reviews=None, tolerance
         attractions=int((~df["category"].isin([RJ_HOTEL, RJ_RESTAURANT])).sum()),
         five_star_hotels=int(((df["category"] == RJ_HOTEL) & (df["rating"] == 5)).sum()),
         without_price=without_price,
+        estimated=estimated,
         price_table=prices,
     )
     return df, summary
@@ -198,6 +240,8 @@ def main():
                         help="máximo de locais (escolhe o mínimo de avaliações)")
     parser.add_argument("--min-reviews", type=int,
                         help="mínimo de avaliações fixo (ignora --target-size)")
+    parser.add_argument("--min-support", type=int, default=10,
+                        help="exemplos mínimos de uma categoria para estimar a faixa")
     parser.add_argument("--boundary-tolerance-m", type=float, default=100)
     parser.add_argument("--out", help="padrão: Input/<city>.csv")
     args = parser.parse_args()
@@ -207,10 +251,12 @@ def main():
 
     rj = pd.read_table("Input/RJ.csv", sep=";")
     rings = bdm.load_boundary(args.city)
+    level_stats = category_price_stats(read_businesses(args.yelp_json))
     df, summary = convert(
         read_businesses(args.yelp_json, CITY_STATE[args.city]), rings, rj,
         target_size=args.target_size, min_reviews=args.min_reviews,
         tolerance_m=args.boundary_tolerance_m,
+        level_stats=level_stats, min_support=args.min_support,
     )
 
     out = args.out or f"Input/{args.city}.csv"
@@ -222,7 +268,8 @@ def main():
     print(f"Salvos {summary['places']} locais em {out}: {summary['hotels']} hotéis "
           f"({summary['five_star_hotels']} com nota 5), {summary['restaurants']} "
           f"restaurantes, {summary['attractions']} atrações; "
-          f"{summary['without_price']} sem faixa de preço (mediana do Rio)")
+          f"{summary['without_price']} sem faixa de preço: {summary['estimated']} estimados "
+          f"pela categoria, {summary['without_price'] - summary['estimated']} com a mediana do Rio")
     print("Tabela de preços (min, max) por faixa, calibrada no RJ.csv:")
     for kind, levels in summary["price_table"].items():
         text = ", ".join(f"{'$' * level if level else 'sem faixa'}: {low:g}–{high:g}"

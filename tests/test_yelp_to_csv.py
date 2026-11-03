@@ -179,3 +179,53 @@ def test_read_businesses_filters_state(tmp_path):
     rows = [business("a", "Hotels"), dict(business("b", "Hotels"), state="PA")]
     path.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     assert [b["business_id"] for b in y.read_businesses(path, "LA")] == ["a"]
+
+
+# --- estimativa da faixa pela categoria ----------------------------------------
+
+
+def priced(n, categories, level):
+    return [business(f"{categories}{level}{i}", categories, price=str(level)) for i in range(n)]
+
+
+@pytest.fixture
+def stats():
+    rows = (priced(10, "Restaurants, Fast Food", 1) + priced(10, "Restaurants, Steakhouses", 4)
+            + priced(5, "Restaurants, Steakhouses", 2)  # média de Steakhouses: 50/15 = 3.33
+            + priced(9, "Restaurants, Rare", 4)  # abaixo do suporte mínimo
+            + priced(10, "Shopping, Fast Food", 4)  # não é restaurante: não conta
+            + priced(10, "Hotels, Resorts", 4) + priced(10, "Hotels", 2))
+    return y.category_price_stats(rows)
+
+
+def test_category_price_stats(stats):
+    assert stats["restaurant"]["Fast Food"] == (10, 10)
+    assert stats["restaurant"]["Steakhouses"] == (50, 15)
+    assert "Restaurants" not in stats["restaurant"]  # genérica
+    assert stats["hotel"]["Hotels"] == (60, 20)
+
+
+@pytest.mark.parametrize("categories, kind, expected", [
+    ("Restaurants, Fast Food", "restaurant", 1),
+    ("Restaurants, Steakhouses", "restaurant", 3),  # 3.33 -> 3
+    ("Restaurants, Fast Food, Steakhouses", "restaurant", 2),  # (1 + 3.33)/2 = 2.17
+    ("Restaurants, Rare", "restaurant", None),  # suporte insuficiente
+    ("Restaurants", "restaurant", None),  # só genérica
+    ("Hotels, Resorts", "hotel", 4),  # (3 + 4)/2 = 3.5 -> 4 (.5 sobe)
+])
+def test_estimate_level(stats, categories, kind, expected):
+    place = business("x", categories, price=None)
+    assert y.estimate_level(place, kind, stats) == expected
+
+
+def test_convert_estimates_missing_levels(rj, stats):
+    places = [business("f", "Restaurants, Fast Food", price=None, reviews=50),
+              business("u", "Restaurants", price=None, reviews=50),
+              business("k", "Restaurants, Fast Food", price="4", reviews=50)]
+    df, summary = y.convert(places, SQUARE, rj, level_stats=stats)
+    table = y.price_table(rj)["restaurant"]
+    row = df.set_index("name")
+    assert (row.loc["Place f", "min price"], row.loc["Place f", "max price"]) == table[1]
+    assert (row.loc["Place u", "min price"], row.loc["Place u", "max price"]) == table[None]
+    assert (row.loc["Place k", "min price"], row.loc["Place k", "max price"]) == table[4]  # faixa real vence
+    assert summary["without_price"] == 2 and summary["estimated"] == 1
