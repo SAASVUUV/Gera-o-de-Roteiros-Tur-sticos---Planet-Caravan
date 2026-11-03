@@ -49,6 +49,8 @@ IBGE_BOUNDARY_URL = (
     "https://servicodados.ibge.gov.br/api/v3/malhas/municipios/{code}"
     "?formato=application/vnd.geo%2Bjson&qualidade=maxima"
 )
+# Cities outside Brazil: the boundary comes from OSM (Nominatim) via osmnx.
+CITY_OSM_QUERY = {"NOLA": "New Orleans, Louisiana, USA"}
 
 OVERPASS_SERVERS = [
     "https://overpass-api.de/api",
@@ -84,14 +86,17 @@ def load_boundary(city):
 
     path = f"Input/{city}_boundary.geojson"
     if not os.path.exists(path):
-        if city not in CITY_IBGE_CODE:
-            raise SystemExit(f"Missing {path}: add the city's IBGE code to "
-                             "CITY_IBGE_CODE or provide the GeoJSON file.")
-        import urllib.request
+        if city in CITY_IBGE_CODE:
+            import urllib.request
 
-        url = IBGE_BOUNDARY_URL.format(code=CITY_IBGE_CODE[city])
-        print(f"Downloading municipality boundary from IBGE to {path}")
-        urllib.request.urlretrieve(url, path)
+            url = IBGE_BOUNDARY_URL.format(code=CITY_IBGE_CODE[city])
+            print(f"Downloading municipality boundary from IBGE to {path}")
+            urllib.request.urlretrieve(url, path)
+        elif city in CITY_OSM_QUERY:
+            download_osm_boundary(CITY_OSM_QUERY[city], path)
+        else:
+            raise SystemExit(f"Missing {path}: add the city to CITY_IBGE_CODE "
+                             "or CITY_OSM_QUERY, or provide the GeoJSON file.")
 
     with open(path, encoding="utf-8") as file:
         geometry = json.load(file)["features"][0]["geometry"]
@@ -99,6 +104,23 @@ def load_boundary(city):
     if geometry["type"] == "Polygon":
         polygons = [polygons]
     return [ring for polygon in polygons for ring in polygon]
+
+
+def download_osm_boundary(query, path):
+    """Saves the OSM boundary of `query` in the same GeoJSON shape as IBGE's."""
+    import json
+
+    try:
+        import osmnx as ox
+    except ImportError:
+        raise SystemExit("osmnx is not installed. Run `pip install osmnx`.")
+
+    print(f"Downloading boundary of {query!r} from OSM to {path}")
+    geometry = ox.geocode_to_gdf(query).geometry.iloc[0].__geo_interface__
+    feature = {"type": "Feature", "properties": {"query": query},
+               "geometry": json.loads(json.dumps(geometry))}  # tuples -> lists
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump({"type": "FeatureCollection", "features": [feature]}, file)
 
 
 def inside_boundary(lat, lon, rings, tolerance_m):
