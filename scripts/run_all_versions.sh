@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# Roda todas as versões (tradução literal, GRASP v1–v4, Greedy e, opcionalmente,
+# o Python dos autores) numa instância, com um perfil de parâmetros, e confere
+# cada saída com o check_results.
+#
+# Uso, a partir da raiz do repositório:
+#   scripts/run_all_versions.sh --city NOLA --profile rio   [--with-python] [--only "v1 v4"]
+#   scripts/run_all_versions.sh --city NOLA --profile local
+#
+# Perfis:
+#   rio    Parameters/*.json (os mesmos do Rio)
+#   local  Parameters/<CITY>/*.json; o que faltar lá vem de Parameters/
+#
+# Cada versão é compilada a partir do seu próprio commit, num worktree
+# temporário, então nada do código atual é alterado. As saídas vão para
+# "Results Analysis/My Results/<CITY>/<perfil>/results_<versão>.txt". Um
+# arquivo que já existe não é sobrescrito: a versão é pulada (apague-o para
+# rodar de novo).
+set -euo pipefail
+
+declare -A COMMIT=(
+  [literal]=70eb95a  # tradução literal (bit-exata com o Python)
+  [v1]=c09da9d
+  [v2]=32fdc39
+  [v3]=aede8fa
+  [v4]=HEAD          # versão atual; também fornece o Greedy e o check_results
+)
+VERSIONS="literal v1 v2 v3 v4 greedy"
+
+CITY=""; PROFILE=""; WITH_PYTHON=0; ONLY=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --city) CITY="$2"; shift 2 ;;
+    --profile) PROFILE="$2"; shift 2 ;;
+    --with-python) WITH_PYTHON=1; shift ;;
+    --only) ONLY="$2"; shift 2 ;;
+    -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
+    *) echo "Opção desconhecida: $1" >&2; exit 2 ;;
+  esac
+done
+[ -n "$CITY" ] && [ -n "$PROFILE" ] || { echo "Informe --city e --profile" >&2; exit 2; }
+[ -n "$ONLY" ] && VERSIONS="$ONLY"
+
+ROOT="$(git rev-parse --show-toplevel)"
+INSTANCE="$ROOT/Input/${CITY}_instance"
+OUT_DIR="$ROOT/Results Analysis/My Results/$CITY/$PROFILE"
+[ -f "$INSTANCE/distance_matrix.bin" ] || {
+  echo "Instância $INSTANCE não existe: rode scripts/export_instance.py --city $CITY" >&2; exit 1; }
+
+PYTHON="${PYTHON:-$ROOT/.venv/bin/python}"
+[ -x "$PYTHON" ] || PYTHON=python
+
+WORK="$(mktemp -d)"
+cleanup() {
+  for tree in "$WORK"/tree-*; do
+    [ -d "$tree" ] && git -C "$ROOT" worktree remove --force "$tree" >/dev/null 2>&1 || true
+  done
+  rm -rf "$WORK"
+}
+trap cleanup EXIT
+
+# Pasta de execução: os programas leem Parameters/*.json do diretório atual.
+RUN="$WORK/run"
+mkdir -p "$RUN/Parameters" "$OUT_DIR"
+cp "$ROOT"/Parameters/*.json "$RUN/Parameters/"
+if [ "$PROFILE" = "local" ]; then
+  [ -d "$ROOT/Parameters/$CITY" ] || { echo "Falta Parameters/$CITY/" >&2; exit 1; }
+  cp "$ROOT/Parameters/$CITY"/*.json "$RUN/Parameters/"
+elif [ "$PROFILE" != "rio" ]; then
+  echo "Perfil desconhecido: $PROFILE (use rio ou local)" >&2; exit 2
+fi
+ln -s "$ROOT/Input" "$RUN/Input"
+cp -r "$RUN/Parameters" "$OUT_DIR/"  # registra com quais parâmetros rodou
+echo "Parâmetros ($PROFILE): $(tr -d ' \n' < "$RUN/Parameters/user.json")"
+
+build() {  # build <commit> -> imprime a pasta cpp/build compilada
+  local tree="$WORK/tree-$1"
+  if [ ! -d "$tree" ]; then
+    git -C "$ROOT" worktree add --detach "$tree" "$1" >/dev/null 2>&1
+    make -s -C "$tree/cpp" >/dev/null
+  fi
+  echo "$tree/cpp/build"
+}
+
+CHECK="$(build HEAD)/check_results"
+
+for version in $VERSIONS; do
+  out="$OUT_DIR/results_$version.txt"
+  if [ -e "$out" ]; then
+    echo "== $version: $out já existe, pulando"; continue
+  fi
+  echo "== $version"
+  start=$SECONDS
+  case "$version" in
+    greedy) (cd "$RUN" && "$(build HEAD)/greedy" --instance "$INSTANCE" --output "$out") ;;
+    literal|v1|v2|v3|v4)
+      (cd "$RUN" && "$(build "${COMMIT[$version]}")/grasp" \
+        --instance "$INSTANCE" --output "$out" --seed 1) ;;
+    *) echo "Versão desconhecida: $version" >&2; exit 2 ;;
+  esac
+  echo "   $((SECONDS - start)) s"
+  (cd "$RUN" && "$CHECK" "$out" --instance "$INSTANCE" | tail -n +1 > /dev/null)
+  echo "   check_results: ${out%.txt}_summary.txt"
+done
+
+if [ "$WITH_PYTHON" = 1 ]; then
+  out="$OUT_DIR/results_python.txt"
+  if [ -e "$out" ]; then
+    echo "== python: $out já existe, pulando"
+  else
+    echo "== python (autores)"
+    start=$SECONDS
+    (cd "$RUN" && "$PYTHON" "$ROOT/src/main.py" --city "$CITY")
+    mv "$RUN/Results Analysis/My Results/results.txt" "$out"
+    echo "   $((SECONDS - start)) s"
+    (cd "$RUN" && "$CHECK" "$out" --instance "$INSTANCE" > /dev/null)
+    echo "   check_results: ${out%.txt}_summary.txt"
+  fi
+fi
