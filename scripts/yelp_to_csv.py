@@ -182,9 +182,18 @@ def convert(businesses, rings, rj, target_size=None, min_reviews=None, tolerance
     if not candidates:
         raise SystemExit("Nenhum local aberto com categoria de interesse")
 
+    # Primeiro o retângulo do limite (barato), para o teste do polígono, que
+    # cria matrizes locais x vértices, só ver os locais da região.
+    vertices = np.concatenate([np.asarray(ring, dtype=float) for ring in rings])
+    margin = tolerance_m / 111_000 * 2  # graus, com folga para a longitude
     lat = np.array([float(b["latitude"]) for b, _ in candidates])
     lon = np.array([float(b["longitude"]) for b, _ in candidates])
-    inside, _ = bdm.inside_boundary(lat, lon, rings, tolerance_m)
+    near = ((lat >= vertices[:, 1].min() - margin) & (lat <= vertices[:, 1].max() + margin)
+            & (lon >= vertices[:, 0].min() - margin) & (lon <= vertices[:, 0].max() + margin))
+    candidates = [c for c, keep in zip(candidates, near) if keep]
+    inside = np.zeros(0, dtype=bool)
+    if candidates:
+        inside, _ = bdm.inside_boundary(lat[near], lon[near], rings, tolerance_m)
     candidates = [c for c, keep in zip(candidates, inside) if keep]
     summary["inside_boundary"] = len(candidates)
 

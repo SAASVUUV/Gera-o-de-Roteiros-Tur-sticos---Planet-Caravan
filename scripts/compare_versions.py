@@ -133,7 +133,7 @@ def merge_versions(section):
         rows.append(s.assign(version=version))
     long = pd.concat(rows)
     wide = long.pivot_table(index=["iterations", "budget", "total_distance"],
-                            columns="version", aggfunc="first")
+                            columns="version", aggfunc="first", dropna=False)
     return wide
 
 

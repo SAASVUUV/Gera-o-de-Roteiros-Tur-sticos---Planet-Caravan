@@ -112,3 +112,13 @@ def test_iteration_order_uses_values_common_to_all_versions(tmp_path):
         return checked([(f"GRASP_vX max_iterations={v}", 500, 1, 0.1, 40.0, 1, "grasp") for v in values])
     order = cv.iteration_order(tmp_path, [grasp([10, 50, 100]), grasp([10, 50, 100, 200, 500])])
     assert order == [10, 50, 100]
+
+
+def test_version_without_feasible_solutions_shows_dash(tmp_path):
+    bad = checked([("GRASP_v1 max_iterations=10", 500, 1, 0.1, 45.0, 0, "grasp")])
+    good = checked([("Greedy", 500, 1, 0.1, 40.0, 1, "greedy")])
+    bad.to_csv(tmp_path / "results_v1_checked.tsv", sep="\t", index=False)
+    good.to_csv(tmp_path / "results_greedy_checked.tsv", sep="\t", index=False)
+    wide = cv.merge_versions(cv.load_section(tmp_path))
+    table = cv.markdown_table(wide, "fitness_feasible", lambda x: f"{x:.2f}")
+    assert "GRASP v1" in table and "| 10 | 500 | 1 | – | 40.00 |" in table
