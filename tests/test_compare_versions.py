@@ -122,3 +122,21 @@ def test_version_without_feasible_solutions_shows_dash(tmp_path):
     wide = cv.merge_versions(cv.load_section(tmp_path))
     table = cv.markdown_table(wide, "fitness_feasible", lambda x: f"{x:.2f}")
     assert "GRASP v1" in table and "| 10 | 500 | 1 | – | 40.00 |" in table
+
+
+def test_authors_folder():
+    assert cv.authors_folder("Results Analysis/My Results/NOLA/rio") == "Results Analysis/Authors/NOLA/rio"
+    assert cv.authors_folder("/x/My Results/") == "/x/Authors"
+    assert cv.authors_folder("somewhere/else") is None
+
+
+def test_python_comes_from_authors_folder(tmp_path):
+    mine = tmp_path / "My Results" / "X" / "rio"
+    authors = tmp_path / "Authors" / "X" / "rio"
+    mine.mkdir(parents=True)
+    authors.mkdir(parents=True)
+    checked([("GRASP_v4 max_iterations=10", 500, 1, 0.1, 44.0, 1, "grasp")]).to_csv(
+        mine / "results_v4_checked.tsv", sep="\t", index=False)
+    checked([("GRASP max_iterations=10", 500, 1, 1.0, 40.0, 1, "grasp")]).to_csv(
+        authors / "results_python_checked.tsv", sep="\t", index=False)
+    assert list(cv.load_section(str(mine))) == ["python", "v4"]

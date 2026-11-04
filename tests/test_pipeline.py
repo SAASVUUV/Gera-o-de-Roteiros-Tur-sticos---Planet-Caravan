@@ -158,7 +158,7 @@ def test_rio_instance_export_unchanged(tmp_path):
 
 @pytest.mark.slow
 def test_rio_grasp_v4_reproduces_first_rows(cpp_build, tmp_path):
-    reference = os.path.join(ROOT, "Results Analysis", "My Results", "results_grasp_v4.txt")
+    reference = os.path.join(ROOT, "Results Analysis", "My Results", "RJ", "rio", "results_v4.txt")
     (tmp_path / "Parameters").mkdir()
     for name in ("user.json", "algorithm.json"):
         shutil.copy(os.path.join(ROOT, "Parameters", name), tmp_path / "Parameters" / name)

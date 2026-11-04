@@ -13,7 +13,8 @@
 #
 # Cada versão é compilada a partir do seu próprio commit, num worktree
 # temporário, então nada do código atual é alterado. As saídas vão para
-# "Results Analysis/My Results/<CITY>/<perfil>/results_<versão>.txt". Um
+# "Results Analysis/My Results/<CITY>/<perfil>/results_<versão>.txt"; a do
+# Python dos autores, para "Results Analysis/Authors/<CITY>/<perfil>/". Um
 # arquivo que já existe não é sobrescrito: a versão é pulada (apague-o para
 # rodar de novo).
 set -euo pipefail
@@ -45,6 +46,7 @@ done
 ROOT="$(git rev-parse --show-toplevel)"
 INSTANCE="$ROOT/Input/${CITY}_instance"
 OUT_DIR="$ROOT/Results Analysis/My Results/$CITY/$PROFILE"
+AUTHORS_DIR="$ROOT/Results Analysis/Authors/$CITY/$PROFILE"
 [ -f "$INSTANCE/distance_matrix.bin" ] || {
   echo "Instância $INSTANCE não existe: rode scripts/export_instance.py --city $CITY" >&2; exit 1; }
 
@@ -62,7 +64,7 @@ trap cleanup EXIT
 
 # Pasta de execução: os programas leem Parameters/*.json do diretório atual.
 RUN="$WORK/run"
-mkdir -p "$RUN/Parameters" "$OUT_DIR"
+mkdir -p "$RUN/Parameters"
 cp "$ROOT"/Parameters/*.json "$RUN/Parameters/"
 if [ "$PROFILE" = "local" ]; then
   [ -d "$ROOT/Parameters/$CITY" ] || { echo "Falta Parameters/$CITY/" >&2; exit 1; }
@@ -71,18 +73,23 @@ elif [ "$PROFILE" != "rio" ]; then
   echo "Perfil desconhecido: $PROFILE (use rio ou local)" >&2; exit 2
 fi
 ln -s "$ROOT/Input" "$RUN/Input"
-# Registra com quais parâmetros os resultados foram feitos, e não deixa
-# misturar na mesma pasta resultados de parâmetros diferentes.
-if [ -d "$OUT_DIR/Parameters" ]; then
-  if ! diff -r -q "$RUN/Parameters" "$OUT_DIR/Parameters" >/dev/null; then
-    echo "Os parâmetros mudaram desde os resultados que já estão em $OUT_DIR:" >&2
-    diff -r "$OUT_DIR/Parameters" "$RUN/Parameters" >&2 || true
-    echo "Use outra pasta (mova a atual) ou restaure os parâmetros." >&2
-    exit 1
+# record_parameters <pasta>: registra com quais parâmetros os resultados foram
+# feitos e não deixa misturar na mesma pasta resultados de parâmetros diferentes.
+record_parameters() {
+  mkdir -p "$1"
+  if [ -d "$1/Parameters" ]; then
+    if ! diff -r -q "$RUN/Parameters" "$1/Parameters" >/dev/null; then
+      echo "Os parâmetros mudaram desde os resultados que já estão em $1:" >&2
+      diff -r "$1/Parameters" "$RUN/Parameters" >&2 || true
+      echo "Use outra pasta (mova a atual) ou restaure os parâmetros." >&2
+      exit 1
+    fi
+  else
+    cp -r "$RUN/Parameters" "$1/"
   fi
-else
-  cp -r "$RUN/Parameters" "$OUT_DIR/"
-fi
+}
+record_parameters "$OUT_DIR"
+if [ "$WITH_PYTHON" = 1 ]; then record_parameters "$AUTHORS_DIR"; fi
 echo "Parâmetros ($PROFILE): $(tr -d ' \n' < "$RUN/Parameters/user.json")"
 
 # build <commit>: compila a versão num worktree e põe a pasta cpp/build em
@@ -128,15 +135,16 @@ for version in $VERSIONS; do
 done
 
 if [ "$WITH_PYTHON" = 1 ]; then
-  out="$OUT_DIR/results_python.txt"
+  out="$AUTHORS_DIR/results_python.txt"
   if [ -e "$out" ]; then
     echo "== python: $out já existe, pulando"
   else
     echo "== python (autores)"
     start=$SECONDS
-    rm -f "$RUN/Results Analysis/My Results/results.txt"
-    (cd "$RUN" && "$PYTHON" "$ROOT/src/main.py" --city "$CITY")
-    mv "$RUN/Results Analysis/My Results/results.txt" "$out"
+    partial="$out.partial"
+    rm -f "$partial"
+    (cd "$RUN" && "$PYTHON" "$ROOT/src/main.py" --city "$CITY" --output "$partial")
+    mv "$partial" "$out"
     echo "   $((SECONDS - start)) s"
     (cd "$RUN" && "$CHECK" "$out" --instance "$INSTANCE" > /dev/null)
     echo "   check_results: ${out%.txt}_summary.txt"

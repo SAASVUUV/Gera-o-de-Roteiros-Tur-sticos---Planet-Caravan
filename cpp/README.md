@@ -4,13 +4,13 @@ GRASP dos autores (`src/heuristics/grasp.py` e o que ele usa) traduzido para C++
 
 | Versão | O que muda | Onde está | Resultados |
 |---|---|---|---|
-| tradução literal | nada: idêntica ao Python, inclusive os bugs | commit `70eb95a` | `results_cpp.txt` (coluna `GRASP`) |
-| `GRASP_v1` | busca local corrigida: nunca viola orçamento nem distância | commit `c09da9d` | `results_grasp_v1.txt` (coluna `GRASP_v1`) |
-| `GRASP_v2` | busca local testa os candidatos em ordem, pelo efeito no trajeto, até um caber | commit `32fdc39` | `results_grasp_v2.txt` (coluna `GRASP_v2`) |
-| `GRASP_v3` | o roteiro do Greedy é a solução inicial; o GRASP só o substitui com fitness ≥ | commit `aede8fa` | `results_grasp_v3.txt` (coluna `GRASP_v3`, 7ª coluna com a origem) |
-| `GRASP_v4` (atual) | α reativo com a fórmula de maximização (Prais & Ribeiro), δ = 10 | código atual | `results_grasp_v4.txt` (coluna `GRASP_v4`, 7ª coluna com a origem) |
+| tradução literal | nada: idêntica ao Python, inclusive os bugs | commit `70eb95a` | `results_literal.txt` (coluna `GRASP`) |
+| `GRASP_v1` | busca local corrigida: nunca viola orçamento nem distância | commit `c09da9d` | `results_v1.txt` (coluna `GRASP_v1`) |
+| `GRASP_v2` | busca local testa os candidatos em ordem, pelo efeito no trajeto, até um caber | commit `32fdc39` | `results_v2.txt` (coluna `GRASP_v2`) |
+| `GRASP_v3` | o roteiro do Greedy é a solução inicial; o GRASP só o substitui com fitness ≥ | commit `aede8fa` | `results_v3.txt` (coluna `GRASP_v3`, 7ª coluna com a origem) |
+| `GRASP_v4` (atual) | α reativo com a fórmula de maximização (Prais & Ribeiro), δ = 10 | código atual | `results_v4.txt` (coluna `GRASP_v4`, 7ª coluna com a origem) |
 
-O C++ reproduz o gerador aleatório do numpy. A tradução literal, com a semente 1, gera exatamente as mesmas 1800 linhas GRASP de `Results Analysis/My Results/results.txt`. A partir da `GRASP_v1`, as rotas mudam porque a busca local aceita e recusa trocas diferentes. Para ver uma versão anterior: `git show <commit>:cpp/src/heuristics/grasp.cpp`.
+O C++ reproduz o gerador aleatório do numpy. A tradução literal, com a semente 1, gera exatamente as mesmas 1800 linhas GRASP de `Results Analysis/Authors/RJ/rio/results_python.txt`. A partir da `GRASP_v1`, as rotas mudam porque a busca local aceita e recusa trocas diferentes. Para ver uma versão anterior: `git show <commit>:cpp/src/heuristics/grasp.cpp`.
 
 Nenhuma versão muda as regras do problema (4 locais por dia, máximo de 45), para que a comparação com os autores continue justa.
 
@@ -96,7 +96,7 @@ make -C cpp
 O comando gera um executável em `cpp/build/` para cada arquivo de `cpp/src/apps/`:
 
 - `grasp`: o GRASP (versão atual, `GRASP_v4`).
-- `greedy`: o Greedy dos autores (tradução literal), grava em `results_greedy_cpp.txt`.
+- `greedy`: o Greedy dos autores (tradução literal), grava em `results_greedy.txt`.
 - `check_results`: o verificador de viabilidade.
 
 Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `third_party/nlohmann/json.hpp`, já vem junto.
@@ -107,7 +107,7 @@ Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `
 cpp/build/grasp
 ```
 
-O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/results_grasp_v4.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v4` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v4 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
+O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/RJ/rio/results_v4.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v4` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v4 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
 
 Uma versão nova deve trocar `GRASP_NAME` em `heuristics/grasp.hpp` e o arquivo padrão em `apps/grasp.cpp`. Assim os resultados de cada versão ficam separados.
 
@@ -115,14 +115,14 @@ Opções:
 
 | Opção | Padrão | |
 |---|---|---|
-| `--output ARQUIVO` | `Results Analysis/My Results/results_grasp_v4.txt` | arquivo de saída (só acrescenta) |
+| `--output ARQUIVO` | `Results Analysis/My Results/RJ/rio/results_v4.txt` | arquivo de saída (só acrescenta) |
 | `--instance PASTA` | `Input/RJ_instance` | dados exportados |
 | `--seed N` | `1` | semente; 1 é a do `main.py` |
 
 ### 4. Verificar a viabilidade dos resultados
 
 ```
-cpp/build/check_results "Results Analysis/My Results/results.txt"
+cpp/build/check_results "Results Analysis/Authors/RJ/rio/results_python.txt"
 ```
 
 O programa aceita arquivos do Python (GRASP e Greedy) e do C++. Ele faz três coisas:
@@ -138,7 +138,7 @@ Os nomes vêm de `Input/RJ_instance/names.tsv`, gravado pelo exportador. O tipo 
 
 O arquivo de resultados só traz `budget` e `total_distance` em cada linha. Os demais parâmetros vêm de `Parameters/user.json`, que precisa ter um único valor para cada um. Se tiver mais de um, informe qual usar com `--amount-days`, `--daily-places` ou `--category`.
 
-Se o fitness recalculado não bater com o registrado, o programa avisa. Isso indica que o arquivo foi gerado com outros dados. É o caso de `Results Analysis/Authors/`, que usou a matriz de distâncias dos autores.
+Se o fitness recalculado não bater com o registrado, o programa avisa. Isso indica que o arquivo foi gerado com outros dados. É o caso de `Results Analysis/Authors/RJ/original/`, que usou a matriz de distâncias dos autores.
 
 #### Regras usadas (`model/feasibility.cpp`)
 

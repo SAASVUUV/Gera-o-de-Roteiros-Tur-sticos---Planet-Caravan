@@ -32,7 +32,7 @@ def build_places_parameters(df_pois, distance_matrix):
     return places_parameters
 
 
-def generate_experiments(df_pois, distance_matrix):
+def generate_experiments(df_pois, distance_matrix, output):
 
     places_parameters = build_places_parameters(df_pois, distance_matrix)
 
@@ -88,7 +88,7 @@ def generate_experiments(df_pois, distance_matrix):
                     end = time.time()
 
                     aux.write_results(
-                        "Results Analysis/My Results/results.txt",
+                        output,
                         user_parameter["budget"],
                         user_parameter["total_distance"],
                         end - start,

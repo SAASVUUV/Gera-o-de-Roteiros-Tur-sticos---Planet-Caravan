@@ -5,10 +5,11 @@ Uso, a partir da raiz do repositório:
 
     python scripts/compare_versions.py --out comparison.md \\
         --section "NOLA, perfil Rio" "Results Analysis/My Results/NOLA/rio" \\
-        --section "Rio" "Results Analysis/My Results/NOLA/rio_reference"
+        --section "Rio" "Results Analysis/My Results/RJ/rio"
 
-Cada pasta de seção tem um results_<versão>_checked.tsv por versão (python,
-literal, v1, v2, v3, v4, greedy; as que faltarem são omitidas). Para cada seção
+Cada pasta de seção tem um results_<versão>_checked.tsv por versão (literal,
+v1, v2, v3, v4, greedy; as que faltarem são omitidas). O do Python dos autores
+vem da pasta equivalente em Authors/ (ex.: Authors/NOLA/rio). Para cada seção
 o relatório traz, por grupo (iterações × budget × distância), o fitness médio
 das soluções viáveis, a % de viáveis, o tempo médio e o do_grasp. No fim vem
 uma tabela que resume cada versão em todas as seções, para comparar instâncias.
@@ -69,12 +70,28 @@ def iteration_order(folder, others):
     return sorted(set.intersection(*sets)) if sets else []
 
 
+def authors_folder(folder):
+    """Pasta equivalente em Authors/: .../My Results/X/p -> .../Authors/X/p.
+    None se a pasta não estiver dentro de "My Results"."""
+    parts = os.path.normpath(folder).split(os.sep)
+    if "My Results" not in parts:
+        return None
+    parts[len(parts) - 1 - parts[::-1].index("My Results")] = "Authors"
+    return os.sep.join(parts)
+
+
 def load_section(folder, iterations=None):
     """{versão: DataFrame do _checked.tsv}, na ordem de VERSION_ORDER.
 
+    Procura na pasta e na equivalente em Authors/ (resultados do Python).
     iterations: se informado, mantém só esses grupos de max_iterations."""
     found = {}
-    for path in glob.glob(os.path.join(folder, "results_*_checked.tsv")):
+    folders = [str(folder)]
+    twin = authors_folder(folder)
+    if twin and os.path.isdir(twin):
+        folders.append(twin)
+    paths = [p for f in folders for p in glob.glob(os.path.join(f, "results_*_checked.tsv"))]
+    for path in paths:
         version = re.fullmatch(r"results_(.+)_checked\.tsv", os.path.basename(path)).group(1)
         if version in VERSION_ORDER:
             df = pd.read_table(path)
@@ -83,7 +100,7 @@ def load_section(folder, iterations=None):
                 df = df[df["algorithm"] == "GRASP"].reset_index(drop=True)
             found[version] = df
     if not found:
-        raise SystemExit(f"Nenhum results_<versão>_checked.tsv em {folder}")
+        raise SystemExit(f"Nenhum results_<versão>_checked.tsv em {' nem '.join(folders)}")
     order = iteration_order(folder, found.values())
     section = {}
     for version in VERSION_ORDER:
