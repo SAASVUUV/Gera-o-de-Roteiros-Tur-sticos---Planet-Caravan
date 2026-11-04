@@ -13,7 +13,9 @@ def write_results(
     algorithm,
 ):
 
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    folder = os.path.dirname(output_file)
+    if folder:
+        os.makedirs(folder, exist_ok=True)
 
     with open(output_file, "a") as file:
 

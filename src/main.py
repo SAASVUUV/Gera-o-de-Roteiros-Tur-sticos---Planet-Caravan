@@ -157,10 +157,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Roda os experimentos (Greedy e GRASP).")
     parser.add_argument("--city", default="RJ", help="lê Input/<city>.csv e a matriz")
     parser.add_argument("--output", help="arquivo de resultados (só acrescenta); padrão: "
-                        "Results Analysis/Authors/<city>/rio/results_python.txt")
+                        "Results Analysis/Authors/<city>/results_python.txt")
     args = parser.parse_args()
     city = args.city
-    output = args.output or f"Results Analysis/Authors/{city}/rio/results_python.txt"
+    # Fora das pastas de perfil: não acrescenta às referências versionadas
+    # (Authors/<city>/<perfil>/), que só o run_all_versions.sh preenche.
+    output = args.output or f"Results Analysis/Authors/{city}/results_python.txt"
 
     np.random.seed(1)
 

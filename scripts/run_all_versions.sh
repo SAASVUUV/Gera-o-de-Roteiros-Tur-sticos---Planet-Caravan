@@ -73,23 +73,22 @@ elif [ "$PROFILE" != "rio" ]; then
   echo "Perfil desconhecido: $PROFILE (use rio ou local)" >&2; exit 2
 fi
 ln -s "$ROOT/Input" "$RUN/Input"
-# record_parameters <pasta>: registra com quais parâmetros os resultados foram
-# feitos e não deixa misturar na mesma pasta resultados de parâmetros diferentes.
-record_parameters() {
-  mkdir -p "$1"
-  if [ -d "$1/Parameters" ]; then
-    if ! diff -r -q "$RUN/Parameters" "$1/Parameters" >/dev/null; then
-      echo "Os parâmetros mudaram desde os resultados que já estão em $1:" >&2
-      diff -r "$1/Parameters" "$RUN/Parameters" >&2 || true
-      echo "Use outra pasta (mova a atual) ou restaure os parâmetros." >&2
-      exit 1
-    fi
-  else
-    cp -r "$RUN/Parameters" "$1/"
+# Registra com quais parâmetros os resultados foram feitos e não deixa misturar
+# resultados de parâmetros diferentes. As duas pastas (My Results e Authors)
+# são conferidas antes de qualquer uma ser criada.
+DIRS=("$OUT_DIR")
+if [ "$WITH_PYTHON" = 1 ]; then DIRS+=("$AUTHORS_DIR"); fi
+for dir in "${DIRS[@]}"; do
+  if [ -d "$dir/Parameters" ] && ! diff -r -q "$RUN/Parameters" "$dir/Parameters" >/dev/null; then
+    echo "Os parâmetros mudaram desde os resultados que já estão em $dir:" >&2
+    diff -r "$dir/Parameters" "$RUN/Parameters" >&2 || true
+    echo "Use outra pasta (mova a atual) ou restaure os parâmetros." >&2
+    exit 1
   fi
-}
-record_parameters "$OUT_DIR"
-if [ "$WITH_PYTHON" = 1 ]; then record_parameters "$AUTHORS_DIR"; fi
+done
+for dir in "${DIRS[@]}"; do
+  if [ ! -d "$dir/Parameters" ]; then mkdir -p "$dir" && cp -r "$RUN/Parameters" "$dir/"; fi
+done
 echo "Parâmetros ($PROFILE): $(tr -d ' \n' < "$RUN/Parameters/user.json")"
 
 # build <commit>: compila a versão num worktree e põe a pasta cpp/build em

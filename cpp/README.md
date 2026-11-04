@@ -64,7 +64,7 @@ Exemplo com médias 43, 44 e 45: o original dava 32,9% / 33,3% / 33,7%, e a v4 d
 - **Por quê: nesta instância o α quase não importa.** Com α **fixo** em 0,1 / 0,3 / 0,5 / 0,7 / 0,9 (o mesmo valor em todas as iterações), o fitness médio de cada grupo fica dentro do ruído (ex.: 500/10 km com 100 iterações: 44,56 / 44,59 / 44,56 / 44,55 / 44,58; desvio-padrão ≈ 0,5). Se todos os α são igualmente bons, nenhuma regra de escolha consegue ganhar. Testamos também δ = 1, 30 e 100, sem diferença.
 - A v4 fica como a versão **correta** do α reativo, e o resultado negativo fica registrado: o α reativo do artigo não contribui para a qualidade nesta instância.
 
-O Greedy em C++ também pode ser rodado sozinho com `cpp/build/greedy`. Ele reproduz exatamente as 600 linhas Greedy de `results.txt`.
+O Greedy em C++ também pode ser rodado sozinho com `cpp/build/greedy`. Ele reproduz exatamente as 600 linhas Greedy de `Results Analysis/Authors/RJ/rio/results_python.txt`.
 
 ## Como usar
 
@@ -107,7 +107,7 @@ Precisa de um g++ com C++20 e não tem outras dependências: o leitor de JSON, `
 cpp/build/grasp
 ```
 
-O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/RJ/rio/results_v4.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v4` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v4 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
+O programa lê `Parameters/user.json`, `algorithm.json` e `experiments.json`. Ele roda todas as combinações na mesma ordem do `opt_call.py`, executando só o GRASP. A cada execução, acrescenta uma linha a `Results Analysis/My Results/RJ/results_v4.txt`, no formato do Python com uma 7ª coluna (a origem da solução: `greedy` ou `grasp`) e `GRASP_v4` na coluna do algoritmo. Antes de cada combinação de parâmetros do algoritmo, escreve um cabeçalho como `# GRASP_v4 max_iterations=10`, que o `check_results` usa para separar os grupos. Essa linha não existe na saída do Python.
 
 Uma versão nova deve trocar `GRASP_NAME` em `heuristics/grasp.hpp` e o arquivo padrão em `apps/grasp.cpp`. Assim os resultados de cada versão ficam separados.
 
@@ -115,7 +115,7 @@ Opções:
 
 | Opção | Padrão | |
 |---|---|---|
-| `--output ARQUIVO` | `Results Analysis/My Results/RJ/rio/results_v4.txt` | arquivo de saída (só acrescenta) |
+| `--output ARQUIVO` | `Results Analysis/My Results/RJ/results_v4.txt` | arquivo de saída (só acrescenta) |
 | `--instance PASTA` | `Input/RJ_instance` | dados exportados |
 | `--seed N` | `1` | semente; 1 é a do `main.py` |
 

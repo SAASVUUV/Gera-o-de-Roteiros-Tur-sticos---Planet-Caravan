@@ -80,6 +80,25 @@ def authors_folder(folder):
     return os.sep.join(parts)
 
 
+def check_same_parameters(folder, twin):
+    """Os resultados de Authors/ só entram na seção se foram feitos com os
+    mesmos Parameters/ (quando as duas pastas os registram)."""
+    a, b = (os.path.join(f, "Parameters") for f in (folder, twin))
+    if not (os.path.isdir(a) and os.path.isdir(b)):
+        return
+    for name in sorted(set(os.listdir(a)) | set(os.listdir(b))):
+        contents = []
+        for base in (a, b):
+            path = os.path.join(base, name)
+            if os.path.exists(path):
+                with open(path) as file:
+                    contents.append(file.read())
+            else:
+                contents.append(None)
+        if contents[0] != contents[1]:
+            raise SystemExit(f"Parameters/{name} difere entre {folder} e {twin}")
+
+
 def load_section(folder, iterations=None):
     """{versão: DataFrame do _checked.tsv}, na ordem de VERSION_ORDER.
 
@@ -87,10 +106,15 @@ def load_section(folder, iterations=None):
     iterations: se informado, mantém só esses grupos de max_iterations."""
     found = {}
     folders = [str(folder)]
+    paths = glob.glob(os.path.join(folders[0], "results_*_checked.tsv"))
     twin = authors_folder(folder)
-    if twin and os.path.isdir(twin):
+    twin_python = twin and os.path.join(twin, "results_python_checked.tsv")
+    if twin_python and os.path.exists(twin_python):
+        if any(os.path.basename(p) == "results_python_checked.tsv" for p in paths):
+            raise SystemExit(f"results_python_checked.tsv em {folder} e em {twin}: deixe só o de Authors/")
+        check_same_parameters(folder, twin)
         folders.append(twin)
-    paths = [p for f in folders for p in glob.glob(os.path.join(f, "results_*_checked.tsv"))]
+        paths.append(twin_python)
     for path in paths:
         version = re.fullmatch(r"results_(.+)_checked\.tsv", os.path.basename(path)).group(1)
         if version in VERSION_ORDER:

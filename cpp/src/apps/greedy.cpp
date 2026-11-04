@@ -3,7 +3,7 @@
 // Rode a partir da raiz do repositório:
 //
 //     cpp/build/greedy [--instance Input/RJ_instance]
-//                      [--output "Results Analysis/My Results/RJ/rio/results_greedy.txt"]
+//                      [--output "Results Analysis/My Results/RJ/results_greedy.txt"]
 //
 // Lê Parameters/user.json e experiments.json e, como o Python, roda o Greedy
 // para cada combinação de parâmetros do usuário x amount_executions,
@@ -26,7 +26,7 @@ namespace {
 
 struct Options {
     std::string instance = "Input/RJ_instance";
-    std::string output = "Results Analysis/My Results/RJ/rio/results_greedy.txt";
+    std::string output = "Results Analysis/My Results/RJ/results_greedy.txt";
 };
 
 Options parse_options(int argc, char** argv) {

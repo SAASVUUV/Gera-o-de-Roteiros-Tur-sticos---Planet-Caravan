@@ -140,3 +140,37 @@ def test_python_comes_from_authors_folder(tmp_path):
     checked([("GRASP max_iterations=10", 500, 1, 1.0, 40.0, 1, "grasp")]).to_csv(
         authors / "results_python_checked.tsv", sep="\t", index=False)
     assert list(cv.load_section(str(mine))) == ["python", "v4"]
+
+
+def twin_folders(tmp_path):
+    mine = tmp_path / "My Results" / "X" / "rio"
+    authors = tmp_path / "Authors" / "X" / "rio"
+    for folder in (mine, authors):
+        (folder / "Parameters").mkdir(parents=True, exist_ok=True)
+        (folder / "Parameters" / "user.json").write_text('{"budget": [500]}')
+    row = [("GRASP_v4 max_iterations=10", 500, 1, 0.1, 44.0, 1, "grasp")]
+    checked(row).to_csv(mine / "results_v4_checked.tsv", sep="\t", index=False)
+    checked(row).to_csv(authors / "results_python_checked.tsv", sep="\t", index=False)
+    return mine, authors
+
+
+def test_only_python_comes_from_authors(tmp_path):
+    mine, authors = twin_folders(tmp_path)
+    stray = checked([("GRASP_v1 max_iterations=10", 500, 1, 0.1, 1.0, 1, "grasp")])
+    stray.to_csv(authors / "results_v1_checked.tsv", sep="\t", index=False)
+    assert list(cv.load_section(str(mine))) == ["python", "v4"]
+
+
+def test_python_in_both_folders_fails(tmp_path):
+    mine, authors = twin_folders(tmp_path)
+    (authors / "results_python_checked.tsv").rename(mine / "results_python_checked.tsv")
+    twin_folders(tmp_path)  # recria o de Authors
+    with pytest.raises(SystemExit):
+        cv.load_section(str(mine))
+
+
+def test_authors_with_other_parameters_fails(tmp_path):
+    mine, authors = twin_folders(tmp_path)
+    (authors / "Parameters" / "user.json").write_text('{"budget": [1000]}')
+    with pytest.raises(SystemExit):
+        cv.load_section(str(mine))

@@ -235,8 +235,7 @@ def test_convert_estimates_missing_levels(rj, stats):
 
 
 def test_every_yelp_city_has_osm_boundary_query():
-    import build_distance_matrix as bdm
-    assert set(y.CITY_STATE) <= set(bdm.CITY_OSM_QUERY)
+    assert set(y.CITY_STATE) <= set(y.bdm.CITY_OSM_QUERY)
     for city, state in y.CITY_STATE.items():
         assert len(state) == 2 and state.isupper(), city
 
