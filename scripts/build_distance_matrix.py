@@ -50,7 +50,11 @@ IBGE_BOUNDARY_URL = (
     "?formato=application/vnd.geo%2Bjson&qualidade=maxima"
 )
 # Cities outside Brazil: the boundary comes from OSM (Nominatim) via osmnx.
-CITY_OSM_QUERY = {"NOLA": "New Orleans, Louisiana, USA"}
+CITY_OSM_QUERY = {
+    "NOLA": "New Orleans, Louisiana, USA",
+    "NASH": "Nashville, Tennessee, USA",  # Nashville-Davidson (condado inteiro)
+    "SBA": "Santa Barbara, California, USA",
+}
 
 OVERPASS_SERVERS = [
     "https://overpass-api.de/api",

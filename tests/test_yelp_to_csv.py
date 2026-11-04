@@ -229,3 +229,21 @@ def test_convert_estimates_missing_levels(rj, stats):
     assert (row.loc["Place u", "min price"], row.loc["Place u", "max price"]) == table[None]
     assert (row.loc["Place k", "min price"], row.loc["Place k", "max price"]) == table[4]  # faixa real vence
     assert summary["without_price"] == 2 and summary["estimated"] == 1
+
+
+# --- cidades cadastradas ----------------------------------------------------------
+
+
+def test_every_yelp_city_has_osm_boundary_query():
+    import build_distance_matrix as bdm
+    assert set(y.CITY_STATE) <= set(bdm.CITY_OSM_QUERY)
+    for city, state in y.CITY_STATE.items():
+        assert len(state) == 2 and state.isupper(), city
+
+
+@pytest.mark.parametrize("state", ["TN", "CA"])
+def test_read_businesses_new_states(tmp_path, state):
+    path = tmp_path / "business.json"
+    rows = [dict(business("in", "Hotels"), state=state), business("out", "Hotels")]  # LA
+    path.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    assert [b["business_id"] for b in y.read_businesses(path, state)] == ["in"]
