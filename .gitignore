@@ -171,13 +171,17 @@ Input/*_instance/
 # Nada derivado dele entra no repositório público.
 Input/yelp/
 Input/NOLA*
-Results Analysis/My Results/NOLA/
-Results Analysis/Authors/NOLA/
+Results Analysis/My Results/NOLA/**
+Results Analysis/Authors/NOLA/**
 Input/NASH*
-Results Analysis/My Results/NASH/
-Results Analysis/Authors/NASH/
+Results Analysis/My Results/NASH/**
+Results Analysis/Authors/NASH/**
 Input/SBA*
-Results Analysis/My Results/SBA/
-Results Analysis/Authors/SBA/
-# Relatórios que juntam cidades do Yelp com o Rio
-Results Analysis/My Results/comparison*.md
+Results Analysis/My Results/SBA/**
+Results Analysis/Authors/SBA/**
+# Exceção: só o desempenho dos algoritmos (scripts/export_metrics.py) e os
+# parâmetros usados entram, sem nada que identifique os locais.
+!Results Analysis/*/*/*/
+!Results Analysis/*/*/*/results_*_metrics.tsv
+!Results Analysis/*/*/*/Parameters/
+!Results Analysis/*/*/*/Parameters/*.json

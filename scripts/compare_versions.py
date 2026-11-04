@@ -7,7 +7,8 @@ Uso, a partir da raiz do repositório:
         --section "NOLA, perfil Rio" "Results Analysis/My Results/NOLA/rio" \\
         --section "Rio" "Results Analysis/My Results/RJ/rio"
 
-Cada pasta de seção tem um results_<versão>_checked.tsv por versão (literal,
+Cada pasta de seção tem um results_<versão>_checked.tsv (ou, sem ele, o
+_metrics.tsv de scripts/export_metrics.py) por versão (literal,
 v1, v2, v3, v4, greedy; as que faltarem são omitidas). O do Python dos autores
 vem da pasta equivalente em Authors/ (ex.: Authors/NOLA/rio). Para cada seção
 o relatório traz, por grupo (iterações × budget × distância), o fitness médio
@@ -99,24 +100,35 @@ def check_same_parameters(folder, twin):
             raise SystemExit(f"Parameters/{name} difere entre {folder} e {twin}")
 
 
+def result_files(folder):
+    """{versão: caminho} dos resultados conferidos da pasta. Usa o _checked.tsv
+    e, se ele não existir, o _metrics.tsv (só as colunas de desempenho, que é o
+    que vai para o git nas cidades do Yelp)."""
+    files = {}
+    for kind in ("metrics", "checked"):  # checked por último: tem prioridade
+        for path in glob.glob(os.path.join(folder, f"results_*_{kind}.tsv")):
+            version = re.fullmatch(rf"results_(.+)_{kind}\.tsv", os.path.basename(path)).group(1)
+            files[version] = path
+    return files
+
+
 def load_section(folder, iterations=None):
-    """{versão: DataFrame do _checked.tsv}, na ordem de VERSION_ORDER.
+    """{versão: DataFrame do _checked.tsv (ou _metrics.tsv)}, na ordem de VERSION_ORDER.
 
     Procura na pasta e na equivalente em Authors/ (resultados do Python).
     iterations: se informado, mantém só esses grupos de max_iterations."""
     found = {}
     folders = [str(folder)]
-    paths = glob.glob(os.path.join(folders[0], "results_*_checked.tsv"))
+    files = result_files(folders[0])
     twin = authors_folder(folder)
-    twin_python = twin and os.path.join(twin, "results_python_checked.tsv")
-    if twin_python and os.path.exists(twin_python):
-        if any(os.path.basename(p) == "results_python_checked.tsv" for p in paths):
-            raise SystemExit(f"results_python_checked.tsv em {folder} e em {twin}: deixe só o de Authors/")
+    twin_python = result_files(twin).get("python") if twin and os.path.isdir(twin) else None
+    if twin_python:
+        if "python" in files:
+            raise SystemExit(f"resultados do Python em {folder} e em {twin}: deixe só os de Authors/")
         check_same_parameters(folder, twin)
         folders.append(twin)
-        paths.append(twin_python)
-    for path in paths:
-        version = re.fullmatch(r"results_(.+)_checked\.tsv", os.path.basename(path)).group(1)
+        files["python"] = twin_python
+    for version, path in files.items():
         if version in VERSION_ORDER:
             df = pd.read_table(path)
             df["secao"] = df["secao"].astype(object).where(df["secao"].notna(), "")
@@ -124,7 +136,7 @@ def load_section(folder, iterations=None):
                 df = df[df["algorithm"] == "GRASP"].reset_index(drop=True)
             found[version] = df
     if not found:
-        raise SystemExit(f"Nenhum results_<versão>_checked.tsv em {' nem '.join(folders)}")
+        raise SystemExit(f"Nenhum results_<versão>_checked.tsv nem _metrics.tsv em {' nem '.join(folders)}")
     order = iteration_order(folder, found.values())
     section = {}
     for version in VERSION_ORDER:

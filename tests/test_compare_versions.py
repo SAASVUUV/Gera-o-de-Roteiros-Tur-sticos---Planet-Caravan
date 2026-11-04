@@ -174,3 +174,14 @@ def test_authors_with_other_parameters_fails(tmp_path):
     (authors / "Parameters" / "user.json").write_text('{"budget": [1000]}')
     with pytest.raises(SystemExit):
         cv.load_section(str(mine))
+
+
+def test_metrics_file_is_used_when_checked_is_missing(tmp_path):
+    rows = [("GRASP_v4 max_iterations=10", 500, 1, 0.1, 44.0, 1, "grasp")]
+    checked(rows).to_csv(tmp_path / "results_v4_metrics.tsv", sep="\t", index=False)
+    other = checked([("GRASP_v1 max_iterations=10", 500, 1, 0.1, 40.0, 1, "grasp")])
+    other.to_csv(tmp_path / "results_v1_metrics.tsv", sep="\t", index=False)
+    other.assign(fitness=41.0).to_csv(tmp_path / "results_v1_checked.tsv", sep="\t", index=False)
+    section = cv.load_section(tmp_path)
+    assert list(section) == ["v1", "v4"]
+    assert section["v1"]["fitness"].iloc[0] == 41.0  # o _checked tem prioridade
