@@ -1,0 +1,29 @@
+{
+    "budget": [
+        500,
+        1000,
+        2500
+    ],
+    "total_distance": [
+        10000,
+        20000
+    ],
+    "category": [
+        3
+    ],
+    "amount_daily_places": [
+        5
+    ],
+    "start_time": [
+        "8:00:00"
+    ],
+    "end_time": [
+        "23:00:00"
+    ],
+    "amount_days": [
+        2
+    ],
+    "travel_end": [
+        "03/01/2008 23:00"
+    ]
+}
