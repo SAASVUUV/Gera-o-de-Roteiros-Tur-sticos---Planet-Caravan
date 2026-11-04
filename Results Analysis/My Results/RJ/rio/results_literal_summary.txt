@@ -1,0 +1,20 @@
+Resumo de viabilidade de: Results Analysis/My Results/results_cpp.txt
+Gerado em: 2026-11-03 11:21 por cpp/build/check_results
+Dados: Input/RJ_instance
+Restrições: amount_days=2, amount_daily_places=5, category=3 (seguidos)
+
+secao  budget  dist          n  viaveis   fit.todas fit.viaveis melhor.viav  violacoes
+GRASP  500     10000       300      70%       41.99       41.86       44.00  distancia=79 orcamento=13 
+GRASP  500     20000       300      83%       42.21       42.16       44.50  distancia=42 orcamento=13 
+GRASP  1000    10000       300      72%       42.92       42.85       44.50  distancia=82 orcamento=3 
+GRASP  1000    20000       300      77%       42.91       42.92       44.50  distancia=66 orcamento=5 
+GRASP  2500    10000       300      68%       43.20       43.16       45.00  distancia=97 
+GRASP  2500    20000       300      77%       43.28       43.27       45.00  distancia=69 orcamento=1 
+
+Total: 1342 de 1800 soluções viáveis (74.6%)
+
+Colunas: n = soluções no grupo; viaveis = % que respeitam todas as restrições;
+fit.todas / fit.viaveis = fitness médio de todas / só das viáveis; melhor.viav = maior
+fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.
+Regras: orçamento = hotel x dias + locais; distância de cada dia inclui a volta ao
+hotel; categoria = locais seguidos da mesma categoria; nenhum local se repete na viagem.

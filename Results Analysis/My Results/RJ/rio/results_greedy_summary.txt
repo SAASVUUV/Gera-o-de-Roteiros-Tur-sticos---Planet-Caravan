@@ -1,0 +1,20 @@
+Resumo de viabilidade de: /home/claude/projetos/planet-caravan/Results Analysis/My Results/RJ/rio/results_greedy.txt
+Gerado em: 2026-11-04 12:39 por cpp/build/check_results
+Dados: /home/claude/projetos/planet-caravan/Input/RJ_instance
+Restrições: amount_days=2, amount_daily_places=5, category=3 (seguidos)
+
+secao   budget  dist          n  viaveis   fit.todas fit.viaveis melhor.viav  violacoes
+Greedy  500     10000       100     100%       36.00       36.00       36.00  
+Greedy  500     20000       100     100%       35.50       35.50       35.50  
+Greedy  1000    10000       100     100%       43.50       43.50       43.50  
+Greedy  1000    20000       100     100%       45.00       45.00       45.00  
+Greedy  2500    10000       100     100%       43.50       43.50       43.50  
+Greedy  2500    20000       100     100%       45.00       45.00       45.00  
+
+Total: 600 de 600 soluções viáveis (100.0%)
+
+Colunas: n = soluções no grupo; viaveis = % que respeitam todas as restrições;
+fit.todas / fit.viaveis = fitness médio de todas / só das viáveis; melhor.viav = maior
+fitness entre as viáveis; violacoes = quantas soluções violam cada restrição.
+Regras: orçamento = hotel x dias + locais; distância de cada dia inclui a volta ao
+hotel; categoria = locais seguidos da mesma categoria; nenhum local se repete na viagem.

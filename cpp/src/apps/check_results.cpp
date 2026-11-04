@@ -3,7 +3,7 @@
 //
 // Rode a partir da raiz do repositório:
 //
-//     cpp/build/check_results "Results Analysis/My Results/results.txt"
+//     cpp/build/check_results "Results Analysis/Authors/RJ/rio/results_python.txt"
 //         [--output ARQUIVO.tsv] [--summary ARQUIVO.txt] [--itineraries ARQUIVO.txt]
 //         [--instance Input/RJ_instance]
 //         [--amount-days N] [--daily-places N] [--category N]

@@ -1,0 +1,152 @@
+Melhores roteiros viáveis de: /home/claude/projetos/planet-caravan/Results Analysis/My Results/RJ/rio/results_greedy.txt
+Gerado em: 2026-11-04 12:39 por cpp/build/check_results
+Um roteiro por grupo: a solução viável de maior fitness (a primeira, se houver empate).
+Distâncias a pé pela matriz de distâncias; '+ X m' é o trecho desde o local anterior.
+
+====================================================================================================
+Greedy | orçamento 500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 1
+
+  Hotel: Casa 48 (nota 5,0, R$ 214 por diária, ID 2)
+
+  Dia 1: 3 locais, 9.046 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.070 m    1. Igara Moda Arte  atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1449
+     + 3.344 m    2. Praia do Pontal  atração: Praias                             nota 4,5  R$ 0      ID 1063
+     + 23 m       3. Praia de Fora    atração: Praias                             nota 4,5  R$ 0      ID 1058
+     + 2.609 m    volta ao hotel
+
+  Dia 2: 4 locais, 9.977 m a pé (limite 10.000 m)
+     sai do hotel
+     + 4.764 m    1. Samambaia Blue   restaurante                                 nota 4,5  R$ 20     ID 1831
+     + 2.558 m    2. Praia do Diabo   atração: Praias                             nota 4,5  R$ 0      ID 1057
+     + 23 m       3. Praia do Diabo   atração: Praias                             nota 4,0  R$ 0      ID 871
+     + 23 m       4. Praia de Dentro  atração: Praias                             nota 4,0  R$ 0      ID 1062
+     + 2.609 m    volta ao hotel
+
+  Custo: R$ 498 de R$ 500 (hotel R$ 428 por 2 diárias + locais R$ 70)
+  Fitness: 36,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+Greedy | orçamento 500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 1
+
+  Hotel: Casa 48 (nota 5,0, R$ 214 por diária, ID 2)
+
+  Dia 1: 4 locais, 19.868 m a pé (limite 20.000 m)
+     sai do hotel
+     + 7.329 m    1. Hazan Unique             atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 1.928 m    2. Icae Acai Store          restaurante                                 nota 5,0  R$ 20     ID 1762
+     + 2.951 m    3. Praia do Leme            atração: Praias                             nota 4,5  R$ 0      ID 947
+     + 2.800 m    4. Praia de Botafogo        atração: Praias                             nota 3,5  R$ 0      ID 1061
+     + 4.860 m    volta ao hotel
+
+  Dia 2: 3 locais, 19.201 m a pé (limite 20.000 m)
+     sai do hotel
+     + 8.644 m    1. Praia de Copacabana      atração: Praias                             nota 4,5  R$ 0      ID 999
+     + 3.986 m    2. Botafogo Praia Shopping  atração: Shopping centers                   nota 4,0  R$ 0      ID 888
+     + 2.429 m    3. Praia do Flamengo        atração: Praias                             nota 4,0  R$ 0      ID 1064
+     + 4.143 m    volta ao hotel
+
+  Custo: R$ 498 de R$ 500 (hotel R$ 428 por 2 diárias + locais R$ 70)
+  Fitness: 35,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+Greedy | orçamento 1000 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 1
+
+  Hotel: Casa 48 (nota 5,0, R$ 214 por diária, ID 2)
+
+  Dia 1: 4 locais, 9.866 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.070 m    1. Igara Moda Arte          atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1449
+     + 2.030 m    2. Capoeira Rio de Janeiro  atração: Aulas e workshops                  nota 5,0  R$ 50     ID 678
+     + 1.656 m    3. Allez Samba Rio          atração: Aulas e workshops                  nota 5,0  R$ 50     ID 1301
+     + 1.216 m    4. O Pao                    restaurante                                 nota 4,0  R$ 100    ID 1825
+     + 1.894 m    volta ao hotel
+
+  Dia 2: 4 locais, 9.986 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.628 m    1. Soul Fun Transfer        atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1426
+     + 2.368 m    2. Rio Squash Clube         atração: Complexos esportivos               nota 5,0  R$ 50     ID 723
+     + 1.251 m    3. Sabor Peruano En Rio     restaurante                                 nota 5,0  R$ 50     ID 1838
+     + 626 m      4. Museus Castro Maya       atração: Museus especializados              nota 4,5  R$ 50     ID 883
+     + 2.114 m    volta ao hotel
+
+  Custo: R$ 878 de R$ 1000 (hotel R$ 428 por 2 diárias + locais R$ 450)
+  Fitness: 43,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+Greedy | orçamento 1000 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 1
+
+  Hotel: Casa 48 (nota 5,0, R$ 214 por diária, ID 2)
+
+  Dia 1: 4 locais, 19.575 m a pé (limite 20.000 m)
+     sai do hotel
+     + 7.329 m    1. Hazan Unique             atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 4.617 m    2. Igara Moda Arte          atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1449
+     + 2.030 m    3. Capoeira Rio de Janeiro  atração: Aulas e workshops                  nota 5,0  R$ 50     ID 678
+     + 739 m      4. bolo doamor: FECHADO     restaurante                                 nota 5,0  R$ 25     ID 1766
+     + 4.859 m    volta ao hotel
+
+  Dia 2: 4 locais, 19.713 m a pé (limite 20.000 m)
+     sai do hotel
+     + 5.052 m    1. Jose Angelo Transfer     atração: Taxis e traslados                  nota 5,0  R$ 50     ID 695
+     + 7.636 m    2. Soul Fun Transfer        atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1426
+     + 3.890 m    3. Transrio Service         atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1542
+     + 494 m      4. Angaro 47                restaurante                                 nota 5,0  R$ 42     ID 1737
+     + 2.642 m    volta ao hotel
+
+  Custo: R$ 795 de R$ 1000 (hotel R$ 428 por 2 diárias + locais R$ 367)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+Greedy | orçamento 2500 | distância 10000 m por dia
+  Melhor de 100 execuções: execução 1
+
+  Hotel: Casa 48 (nota 5,0, R$ 214 por diária, ID 2)
+
+  Dia 1: 4 locais, 9.866 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.070 m    1. Igara Moda Arte          atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1449
+     + 2.030 m    2. Capoeira Rio de Janeiro  atração: Aulas e workshops                  nota 5,0  R$ 50     ID 678
+     + 1.656 m    3. Allez Samba Rio          atração: Aulas e workshops                  nota 5,0  R$ 50     ID 1301
+     + 1.216 m    4. O Pao                    restaurante                                 nota 4,0  R$ 100    ID 1825
+     + 1.894 m    volta ao hotel
+
+  Dia 2: 4 locais, 9.986 m a pé (limite 10.000 m)
+     sai do hotel
+     + 3.628 m    1. Soul Fun Transfer        atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1426
+     + 2.368 m    2. Rio Squash Clube         atração: Complexos esportivos               nota 5,0  R$ 50     ID 723
+     + 1.251 m    3. Sabor Peruano En Rio     restaurante                                 nota 5,0  R$ 50     ID 1838
+     + 626 m      4. Museus Castro Maya       atração: Museus especializados              nota 4,5  R$ 50     ID 883
+     + 2.114 m    volta ao hotel
+
+  Custo: R$ 878 de R$ 2500 (hotel R$ 428 por 2 diárias + locais R$ 450)
+  Fitness: 43,5 (soma das notas dos locais distintos, hotel incluído)
+
+====================================================================================================
+Greedy | orçamento 2500 | distância 20000 m por dia
+  Melhor de 100 execuções: execução 1
+
+  Hotel: Casa 48 (nota 5,0, R$ 214 por diária, ID 2)
+
+  Dia 1: 4 locais, 19.575 m a pé (limite 20.000 m)
+     sai do hotel
+     + 7.329 m    1. Hazan Unique             atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 663
+     + 4.617 m    2. Igara Moda Arte          atração: Lojas especializadas e de suvenir  nota 5,0  R$ 50     ID 1449
+     + 2.030 m    3. Capoeira Rio de Janeiro  atração: Aulas e workshops                  nota 5,0  R$ 50     ID 678
+     + 739 m      4. bolo doamor: FECHADO     restaurante                                 nota 5,0  R$ 25     ID 1766
+     + 4.859 m    volta ao hotel
+
+  Dia 2: 4 locais, 19.713 m a pé (limite 20.000 m)
+     sai do hotel
+     + 5.052 m    1. Jose Angelo Transfer     atração: Taxis e traslados                  nota 5,0  R$ 50     ID 695
+     + 7.636 m    2. Soul Fun Transfer        atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1426
+     + 3.890 m    3. Transrio Service         atração: Taxis e traslados                  nota 5,0  R$ 50     ID 1542
+     + 494 m      4. Angaro 47                restaurante                                 nota 5,0  R$ 42     ID 1737
+     + 2.642 m    volta ao hotel
+
+  Custo: R$ 795 de R$ 2500 (hotel R$ 428 por 2 diárias + locais R$ 367)
+  Fitness: 45,0 (soma das notas dos locais distintos, hotel incluído)

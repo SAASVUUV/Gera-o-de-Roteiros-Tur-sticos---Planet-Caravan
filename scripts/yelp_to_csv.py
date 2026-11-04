@@ -43,7 +43,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import build_distance_matrix as bdm  # noqa: E402
 
-CITY_STATE = {"NOLA": "LA"}
+CITY_STATE = {"NOLA": "LA", "NASH": "TN", "SBA": "CA"}
 
 HOTEL_CATEGORIES = {"Hotels", "Bed & Breakfast", "Hostels", "Resorts", "Guest Houses"}
 RESTAURANT_CATEGORIES = {"Restaurants", "Cafes"}
